@@ -107,6 +107,13 @@ public class PedidoService {
         return total != null ? total : 0.0;
     }
 
+    public List<PedidoDTO> obtenerPedidosPorUsuarioYFoodTruck(Long usuarioId, Long foodTruckId) {
+        return pedidoRepository.findByUsuarioIdAndFoodTruckId(usuarioId, foodTruckId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private PedidoDTO toDTO(Pedido pedido) {
         PedidoDTO dto = new PedidoDTO();
         dto.setId(pedido.getId());

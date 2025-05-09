@@ -3,23 +3,8 @@
  */
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// Mostrar modal de login al cargar la página
+// Cargar contenido al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'), { backdrop: 'static' });
-    if (!localStorage.getItem('token')) {
-        loginModal.show();
-    }
-
-    // Manejar formulario de login
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await login();
-            loginModal.hide();
-        });
-    }
-
     // Cargar food trucks cercanos en index.html
     const searchForm = document.getElementById('searchForm');
     if (searchForm) {
@@ -29,9 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const calle = document.getElementById('calle').value;
             loadFoodTrucksCercanos(ciudad, calle);
         });
-        if (localStorage.getItem('token')) {
-            loadFoodTrucksCercanos('Nueva York', '');
-        }
+        loadFoodTrucksCercanos('Nueva York', '');
+    }
+
+    // Cargar todos los food trucks en foodtrucks.html
+    if (window.location.pathname.includes('foodtrucks.html')) {
+        loadAllFoodTrucks();
     }
 
     // Cargar menús en menu.html
@@ -44,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
             loadMenus(foodTruckId);
             // Actualizar enlace de pedido
             const pedidoLink = document.querySelector('a[href="pedido.html"]');
-            pedidoLink.href = `pedido.html?foodTruckId=${foodTruckId}`;
+            if (pedidoLink) {
+                pedidoLink.href = `pedido.html?foodTruckId=${foodTruckId}`;
+            }
         }
     }
 
@@ -64,35 +54,51 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // Manejar registro en register.html
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await register();
+        });
+    }
 });
 
-// Iniciar sesión
-async function login() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+// Cargar todos los food trucks
+async function loadAllFoodTrucks() {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('usuarioId', data.usuarioId);
-            alert('Inicio de sesión exitoso');
-            // Recargar food trucks si estamos en index.html
-            if (window.location.pathname.includes('index.html')) {
-                loadFoodTrucksCercanos('Nueva York', '');
-            }
-        } else {
-            alert('Error al iniciar sesión');
+        const response = await fetch(`${API_BASE_URL}/foodtrucks`);
+        if (!response.ok) {
+            throw new Error('Error al cargar food trucks');
         }
+        const foodTrucks = await response.json();
+        const foodTrucksList = document.getElementById('foodTrucksList');
+        foodTrucksList.innerHTML = '';
+        if (foodTrucks.length === 0) {
+            foodTrucksList.innerHTML = '<p class="text-center">No se encontraron food trucks.</p>';
+            return;
+        }
+        foodTrucks.forEach(truck => {
+            const card = `
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="${truck.nombre}">
+                        <div class="card-body">
+                            <h5 class="card-title">${truck.nombre}</h5>
+                            <p class="card-text">Cocina: ${truck.tipoCocina}</p>
+                            <p class="card-text">Ubicación: ${truck.ubicacionActual}</p>
+                            <a href="menu.html?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            foodTrucksList.innerHTML += card;
+        });
     } catch (error) {
-        console.error('Error al iniciar sesión:', error);
-        alert('Error al iniciar sesión');
+        console.error('Error al cargar food trucks:', error);
+        const foodTrucksList = document.getElementById('foodTrucksList');
+        foodTrucksList.innerHTML = '<p class="text-danger text-center">Error al cargar los food trucks.</p>';
     }
 }
 
@@ -102,18 +108,14 @@ async function loadFoodTrucksCercanos(ciudad, calle) {
         const url = new URL(`${API_BASE_URL}/foodtrucks/cerca`);
         url.searchParams.append('ciudad', ciudad);
         if (calle) url.searchParams.append('calle', calle);
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await fetch(url);
         const foodTrucks = await response.json();
         const foodTrucksList = document.getElementById('foodTrucksList');
         foodTrucksList.innerHTML = '';
         foodTrucks.forEach(truck => {
             const card = `
-                <div class="col-md-4 mb-4">
-                    <div class="card">
+                <div class="col">
+                    <div class="card h-100">
                         <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="${truck.nombre}">
                         <div class="card-body">
                             <h5 class="card-title">${truck.nombre}</h5>
@@ -134,11 +136,7 @@ async function loadFoodTrucksCercanos(ciudad, calle) {
 // Cargar menús de un food truck (para menu.html)
 async function loadMenus(foodTruckId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/menus/foodtruck/${foodTruckId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/menus/foodtruck/${foodTruckId}`);
         const menus = await response.json();
         const menuList = document.getElementById('menuList');
         menuList.innerHTML = '';
@@ -165,11 +163,7 @@ async function loadMenus(foodTruckId) {
 // Cargar menús para selección en pedido.html
 async function loadMenusForPedido(foodTruckId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/menus/foodtruck/${foodTruckId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/menus/foodtruck/${foodTruckId}`);
         const menus = await response.json();
         const menuItems = document.getElementById('menuItems');
         menuItems.innerHTML = '';
@@ -201,7 +195,7 @@ function updatePedido() {
 // Enviar un pedido
 async function submitPedido() {
     const pedido = {
-        usuarioId: parseInt(localStorage.getItem('usuarioId') || document.getElementById('usuarioId').value),
+        usuarioId: parseInt(document.getElementById('usuarioId').value),
         foodTruckId: document.getElementById('foodTruckId').value,
         items: document.getElementById('items').value,
         montoTotal: parseFloat(document.getElementById('montoTotal').value),
@@ -211,8 +205,7 @@ async function submitPedido() {
         const response = await fetch(`${API_BASE_URL}/pedidos`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(pedido)
         });
@@ -231,13 +224,9 @@ async function submitPedido() {
 
 // Cargar notificaciones de un usuario
 async function loadNotificaciones() {
-    const usuarioId = localStorage.getItem('usuarioId') || document.getElementById('usuarioIdNotificaciones').value;
+    const usuarioId = document.getElementById('usuarioIdNotificaciones').value;
     try {
-        const response = await fetch(`${API_BASE_URL}/notificaciones/usuario/${usuarioId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/notificaciones/usuario/${usuarioId}`);
         const notificaciones = await response.json();
         const notificacionesList = document.getElementById('notificacionesList');
         notificacionesList.innerHTML = '';
@@ -252,5 +241,32 @@ async function loadNotificaciones() {
         });
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
+    }
+}
+
+// Registrar un nuevo usuario
+async function register() {
+    const usuario = {
+        nombre: document.getElementById('registerNombre').value,
+        email: document.getElementById('registerEmail').value,
+        password: document.getElementById('registerPassword').value,
+        ubicacion: document.getElementById('registerUbicacion').value || null
+    };
+    try {
+        const response = await fetch(`${API_BASE_URL}/usuarios`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(usuario)
+        });
+        if (response.ok) {
+            document.getElementById('registerMessage').innerHTML = '<p class="text-success">Registro exitoso. ¡Bienvenido a Truck Bites!</p>';
+            document.getElementById('registerForm').reset();
+        } else {
+            const errorData = await response.json();
+            document.getElementById('registerMessage').innerHTML = `<p class="text-danger">Error: ${errorData.message || 'No se pudo registrar. Intenta de nuevo.'}</p>`;
+        }
+    } catch (error) {
+        console.error('Error al registrarse:', error);
+        document.getElementById('registerMessage').innerHTML = '<p class="text-danger">Error al conectar con el servidor. Intenta de nuevo.</p>';
     }
 }

@@ -8,9 +8,10 @@ import lombok.Data;
 @Data
 public class MenuDTO {
     private Long id;
-    private Long foodTruckId;
     private String nombre;
     private String descripcion;
     private Double precio;
+    private Long foodTruckId;
+    private String foodTruckNombre;
 }
 

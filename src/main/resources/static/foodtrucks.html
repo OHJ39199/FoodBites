@@ -33,47 +33,22 @@
                     <a class="nav-link" href="notificaciones.html">Notificaciones</a>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link btn btn-link" data-bs-toggle="modal" data-bs-target="#loginModal">Iniciar Sesión</button>
+                    <a class="nav-link" href="register.html">Registrarse</a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
 
-<main class="row background-page m-1">
+<main class="container my-5">
     <h1 class="text-center mb-4">Nuestros Food Trucks</h1>
-    <div class="container">
-        <div id="foodTrucksList" class="row">
-            <!-- Food trucks will be dynamically loaded here -->
-        </div>
+    <div id="foodTrucksList" class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Food trucks will be dynamically loaded here -->
     </div>
+
 </main>
 
-<!-- Modal de Login -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="loginForm">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" id="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
+<!-- Pie de página -->
 <footer class="text p-4">
     <div class="container">
         <div class="row">

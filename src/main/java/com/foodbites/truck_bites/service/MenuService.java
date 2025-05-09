@@ -19,26 +19,19 @@ import java.util.stream.Collectors;
 public class MenuService {
 
     private final MenuRepository menuRepository;
-    private final FoodTruckRepository foodTruckRepository;
 
-    public MenuService(MenuRepository menuRepository, FoodTruckRepository foodTruckRepository) {
+    public MenuService(MenuRepository menuRepository) {
         this.menuRepository = menuRepository;
-        this.foodTruckRepository = foodTruckRepository;
     }
 
     @Transactional
     public MenuDTO crearMenu(MenuDTO menuDTO) {
-        Optional<FoodTruck> foodTruck = foodTruckRepository.findById(menuDTO.getFoodTruckId());
-        if (foodTruck.isPresent()) {
-            Menu menu = new Menu();
-            menu.setFoodTruck(foodTruck.get());
-            menu.setNombre(menuDTO.getNombre());
-            menu.setDescripcion(menuDTO.getDescripcion());
-            menu.setPrecio(menuDTO.getPrecio());
-            menu = menuRepository.save(menu);
-            return toDTO(menu);
-        }
-        throw new IllegalArgumentException("FoodTruck no encontrado con ID: " + menuDTO.getFoodTruckId());
+        Menu menu = new Menu();
+        menu.setNombre(menuDTO.getNombre());
+        menu.setDescripcion(menuDTO.getDescripcion());
+        menu.setPrecio(menuDTO.getPrecio());
+        menu = menuRepository.save(menu);
+        return toDTO(menu);
     }
 
     public List<MenuDTO> obtenerMenus() {
@@ -61,16 +54,11 @@ public class MenuService {
         Optional<Menu> menuOpt = menuRepository.findById(id);
         if (menuOpt.isPresent()) {
             Menu menu = menuOpt.get();
-            Optional<FoodTruck> foodTruck = foodTruckRepository.findById(menuDTO.getFoodTruckId());
-            if (foodTruck.isPresent()) {
-                menu.setFoodTruck(foodTruck.get());
-                menu.setNombre(menuDTO.getNombre());
-                menu.setDescripcion(menuDTO.getDescripcion());
-                menu.setPrecio(menuDTO.getPrecio());
-                menu = menuRepository.save(menu);
-                return toDTO(menu);
-            }
-            throw new IllegalArgumentException("FoodTruck no encontrado con ID: " + menuDTO.getFoodTruckId());
+            menu.setNombre(menuDTO.getNombre());
+            menu.setDescripcion(menuDTO.getDescripcion());
+            menu.setPrecio(menuDTO.getPrecio());
+            menu = menuRepository.save(menu);
+            return toDTO(menu);
         }
         throw new IllegalArgumentException("Menú no encontrado con ID: " + id);
     }
@@ -94,10 +82,11 @@ public class MenuService {
     private MenuDTO toDTO(Menu menu) {
         MenuDTO dto = new MenuDTO();
         dto.setId(menu.getId());
-        dto.setFoodTruckId(menu.getFoodTruck().getId());
         dto.setNombre(menu.getNombre());
         dto.setDescripcion(menu.getDescripcion());
         dto.setPrecio(menu.getPrecio());
+        dto.setFoodTruckId(menu.getFoodTruck().getId());
+        dto.setFoodTruckNombre(menu.getFoodTruck().getNombre());
         return dto;
     }
 }

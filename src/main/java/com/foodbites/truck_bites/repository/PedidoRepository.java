@@ -38,4 +38,13 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     Double calculateTotalSalesByFoodTruck(@Param("foodTruckId") Long foodTruckId,
                                           @Param("startDate") java.time.LocalDateTime startDate,
                                           @Param("endDate") java.time.LocalDateTime endDate);
+
+    /**
+     * Encuentra pedidos por usuario y food truck.
+     * @param usuarioId ID del usuario.
+     * @param foodTruckId ID del food truck.
+     * @return Lista de pedidos.
+     */
+    @Query("SELECT p FROM Pedido p JOIN p.usuario u JOIN p.foodTruck ft WHERE u.id = :usuarioId AND ft.id = :foodTruckId")
+    List<Pedido> findByUsuarioIdAndFoodTruckId(@Param("usuarioId") Long usuarioId, @Param("foodTruckId") Long foodTruckId);
 }

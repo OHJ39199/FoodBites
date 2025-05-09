@@ -23,8 +23,9 @@ public class UsuarioController {
 
     // Crear un nuevo usuario
     @PostMapping
-    public ResponseEntity<UsuarioDTO> crearUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
-        return ResponseEntity.ok(usuarioService.crearUsuario(usuarioDTO));
+    public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody UsuarioDTO usuarioDTO) {
+        UsuarioDTO created = usuarioService.crearUsuario(usuarioDTO);
+        return ResponseEntity.ok(created);
     }
 
     // Obtener todos los usuarios

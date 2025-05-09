@@ -6,6 +6,7 @@ import com.foodbites.truck_bites.repository.FoodTruckRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -75,6 +76,16 @@ public class FoodTruckService {
         return foodTruckRepository.findByUbicacionActualContainingIgnoreCase(ciudad)
                 .stream()
                 .filter(ft -> calle == null || calle.isEmpty() || ft.getUbicacionActual().toLowerCase().contains(calle.toLowerCase()))
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<FoodTruckDTO> recomendarFoodTrucks(String ciudad, String tipoCocina) {
+        return foodTruckRepository.findByUbicacionActualContainingIgnoreCase(ciudad)
+                .stream()
+                .filter(ft -> ft.getTipoCocina().equalsIgnoreCase(tipoCocina))
+                .sorted(Comparator.comparing(FoodTruck::getNombre))
+                .limit(5)
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }

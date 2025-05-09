@@ -30,6 +30,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNombre(usuarioDTO.getNombre());
         usuario.setEmail(usuarioDTO.getEmail());
+        usuario.setPassword(usuarioDTO.getPassword());
         usuario.setUbicacion(usuarioDTO.getUbicacion());
         usuario = usuarioRepository.save(usuario);
         return toDTO(usuario);
@@ -57,6 +58,7 @@ public class UsuarioService {
             Usuario usuario = usuarioOpt.get();
             usuario.setNombre(usuarioDTO.getNombre());
             usuario.setEmail(usuarioDTO.getEmail());
+            usuario.setPassword(usuarioDTO.getPassword());
             usuario.setUbicacion(usuarioDTO.getUbicacion());
             usuario = usuarioRepository.save(usuario);
             return toDTO(usuario);
@@ -86,6 +88,7 @@ public class UsuarioService {
         dto.setId(usuario.getId());
         dto.setNombre(usuario.getNombre());
         dto.setEmail(usuario.getEmail());
+        dto.setPassword(usuario.getPassword());
         dto.setUbicacion(usuario.getUbicacion());
         return dto;
     }

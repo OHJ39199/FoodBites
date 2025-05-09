@@ -23,26 +23,30 @@ public class MenuController {
 
     // Crear un nuevo menú
     @PostMapping
-    public ResponseEntity<MenuDTO> crearMenu(@Valid @RequestBody MenuDTO menuDTO) {
-        return ResponseEntity.ok(menuService.crearMenu(menuDTO));
+    public ResponseEntity<MenuDTO> crearMenu(@RequestBody MenuDTO menuDTO) {
+        MenuDTO created = menuService.crearMenu(menuDTO);
+        return ResponseEntity.ok(created);
     }
 
     // Obtener todos los menús
     @GetMapping
     public ResponseEntity<List<MenuDTO>> obtenerMenus() {
-        return ResponseEntity.ok(menuService.obtenerMenus());
+        List<MenuDTO> menus = menuService.obtenerMenus();
+        return ResponseEntity.ok(menus);
     }
 
     // Obtener un menú por ID
     @GetMapping("/{id}")
     public ResponseEntity<MenuDTO> obtenerMenuPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(menuService.obtenerMenuPorId(id));
+        MenuDTO menu = menuService.obtenerMenuPorId(id);
+        return ResponseEntity.ok(menu);
     }
 
     // Actualizar un menú
     @PutMapping("/{id}")
-    public ResponseEntity<MenuDTO> actualizarMenu(@PathVariable Long id, @Valid @RequestBody MenuDTO menuDTO) {
-        return ResponseEntity.ok(menuService.actualizarMenu(id, menuDTO));
+    public ResponseEntity<MenuDTO> actualizarMenu(@PathVariable Long id, @RequestBody MenuDTO menuDTO) {
+        MenuDTO updated = menuService.actualizarMenu(id, menuDTO);
+        return ResponseEntity.ok(updated);
     }
 
     // Eliminar un menú
@@ -55,7 +59,8 @@ public class MenuController {
     // Obtener menús por food truck
     @GetMapping("/foodtruck/{foodTruckId}")
     public ResponseEntity<List<MenuDTO>> obtenerMenusPorFoodTruck(@PathVariable Long foodTruckId) {
-        return ResponseEntity.ok(menuService.obtenerMenusPorFoodTruck(foodTruckId));
+        List<MenuDTO> menus = menuService.obtenerMenusPorFoodTruck(foodTruckId);
+        return ResponseEntity.ok(menus);
     }
 }
 

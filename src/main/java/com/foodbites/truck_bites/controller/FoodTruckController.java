@@ -57,4 +57,11 @@ public class FoodTruckController {
         List<FoodTruckDTO> foodTrucks = foodTruckService.obtenerFoodTrucksCerca(ciudad, calle);
         return ResponseEntity.ok(foodTrucks);
     }
+
+    @GetMapping("/recomendar")
+    public ResponseEntity<List<FoodTruckDTO>> recomendarFoodTrucks(
+            @RequestParam String ciudad, @RequestParam String tipoCocina) {
+        List<FoodTruckDTO> foodTrucks = foodTruckService.recomendarFoodTrucks(ciudad, tipoCocina);
+        return ResponseEntity.ok(foodTrucks);
+    }
 }
