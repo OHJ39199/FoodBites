@@ -1,5 +1,16 @@
 /* Estilos personalizados para Truck Bites */
 
+/*fuente titulos*/
+@font-face {
+	font-family:agresiva;
+	src: url(edosz.ttf);
+}
+.alternative-text{
+	font-family: arial;
+}
+.text{
+	font-family: agresiva;
+}
 /* Colores principales */
 :root {
     --primary-color: #f28c38; /* Naranja vibrante */
@@ -17,6 +28,11 @@ body {
 /* Estilo para la barra de navegación */
 .navbar {
     background-color: var(--secondary-color) !important;
+}
+
+.nav-item{
+	font-family:agresiva;
+	font-size: 3em;
 }
 
 .navbar-brand, .nav-link {
@@ -73,9 +89,27 @@ body {
 
 /* Encabezados */
 h1, h5 {
+    font-family: agresiva;
+    text-shadow: 2px 2px 6px var(--primary-color);
     color: var(--secondary-color);
 }
 
+h3 {
+	font-family: agresiva;
+    color: #1a1a1a;
+	font-size: 50px;
+	text-align: center;
+	text-shadow: 2px 2px 6px var(--primary-color);
+}
+
+.title-page {
+	font-family: agresiva;
+    font-size: 20px;
+    text-align: center;
+    margin: 4px;
+    text-shadow: 2px 2px 6px var(--primary-color);
+}
+    
 /* Ajustes responsivos */
 @media (max-width: 768px) {
     .card-img-top {
