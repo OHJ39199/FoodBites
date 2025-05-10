@@ -114,13 +114,19 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
+    public List<PedidoDTO> obtenerPedidosPorUsuario(Long usuarioId) {
+        return pedidoRepository.findByUsuarioId(usuarioId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private PedidoDTO toDTO(Pedido pedido) {
         PedidoDTO dto = new PedidoDTO();
         dto.setId(pedido.getId());
         dto.setUsuarioId(pedido.getUsuario().getId());
-        dto.setNombreUsuario(pedido.getUsuario().getNombre());
         dto.setFoodTruckId(pedido.getFoodTruck().getId());
-        dto.setNombreFoodTruck(pedido.getFoodTruck().getNombre());
+        dto.setFoodTruckNombre(pedido.getFoodTruck().getNombre());
         dto.setItems(pedido.getItems());
         dto.setMontoTotal(pedido.getMontoTotal());
         dto.setEstado(pedido.getEstado());

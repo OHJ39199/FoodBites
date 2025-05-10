@@ -23,8 +23,9 @@ public class PedidoController {
     }
 
     @PostMapping
-    public ResponseEntity<PedidoDTO> crearPedido(@Valid @RequestBody PedidoDTO pedidoDTO) {
-        return ResponseEntity.ok(pedidoService.crearPedido(pedidoDTO));
+    public ResponseEntity<PedidoDTO> crearPedido(@RequestBody PedidoDTO pedidoDTO) {
+        PedidoDTO created = pedidoService.crearPedido(pedidoDTO);
+        return ResponseEntity.ok(created);
     }
 
     @GetMapping
@@ -67,5 +68,11 @@ public class PedidoController {
     public ResponseEntity<List<PedidoDTO>> obtenerPedidosPorUsuarioYFoodTruck(
             @PathVariable Long usuarioId, @PathVariable Long foodTruckId) {
         return ResponseEntity.ok(pedidoService.obtenerPedidosPorUsuarioYFoodTruck(usuarioId, foodTruckId));
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<PedidoDTO>> obtenerPedidosPorUsuario(@PathVariable Long usuarioId) {
+        List<PedidoDTO> pedidos = pedidoService.obtenerPedidosPorUsuario(usuarioId);
+        return ResponseEntity.ok(pedidos);
     }
 }

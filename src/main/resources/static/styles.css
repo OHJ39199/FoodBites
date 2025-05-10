@@ -61,8 +61,11 @@ body {
 }
 
 /* Botones */
-.btn-primary {
+.btn{
     background-color: var(--primary-color);
+}
+.btn-primary {
+
     border-color: var(--primary-color);
 }
 
@@ -93,11 +96,17 @@ h1, h5 {
     text-shadow: 2px 2px 6px var(--primary-color);
     color: var(--secondary-color);
 }
-
+h2 {
+    font-family: agresiva;
+    color: #1a1a1a;
+    font-size: 50px;
+    text-align: center;
+    text-shadow: 2px 2px 6px var(--primary-color);
+}
 h3 {
 	font-family: agresiva;
     color: #1a1a1a;
-	font-size: 50px;
+	font-size: 40px;
 	text-align: center;
 	text-shadow: 2px 2px 6px var(--primary-color);
 }
@@ -109,10 +118,45 @@ h3 {
     margin: 4px;
     text-shadow: 2px 2px 6px var(--primary-color);
 }
-    
-/* Ajustes responsivos */
+
 @media (max-width: 768px) {
     .card-img-top {
         height: 150px;
     }
+
+    /* Ajustes responsivos para las tablas */
+.table-responsive {
+    margin-top: 1rem;
+}
+.table {
+    font-size: 0.9rem;
+}
+.table th, .table td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+.pedido-id-col {
+    width: 10%;
+    text-align: center;
+}
+.foodtruck-col {
+    width: 20%;
+}
+.items-col {
+    width: 30%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.monto-col {
+    width: 15%;
+    text-align: right;
+}
+.estado-col {
+    width: 15%;
+    text-align: center;
+}
+.fecha-col {
+    width: 20%;
+}
 }

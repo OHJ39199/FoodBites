@@ -10,9 +10,8 @@ import java.time.LocalDateTime;
 public class PedidoDTO {
     private Long id;
     private Long usuarioId;
-    private String nombreUsuario;
     private Long foodTruckId;
-    private String nombreFoodTruck;
+    private String foodTruckNombre;
     private String items;
     private Double montoTotal;
     private String estado;

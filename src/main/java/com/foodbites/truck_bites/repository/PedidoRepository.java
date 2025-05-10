@@ -19,6 +19,13 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByFoodTruckId(Long foodTruckId);
 
     /**
+     * Encuentra todos los pedidos asociados a un usuario.
+     * @param usuarioId ID del usuario.
+     * @return Lista de pedidos del usuario especificado.
+     */
+    List<Pedido> findByUsuarioId(Long usuarioId);
+
+    /**
      * Encuentra pedidos pendientes de un food truck.
      * @param foodTruckId ID del food truck.
      * @return Lista de pedidos en estado PENDIENTE.
