@@ -152,7 +152,6 @@ async function loadAllFoodTrucks() {
             const card = `
                 <div class="col">
                     <div class="card h-100">
-                        <img src="/img/foodtruck_placeholder.jpg" class="card-img-top" alt="${truck.nombre}">
                         <div class="card-body">
                             <h5 class="card-title">${truck.nombre}</h5>
                             <p class="card-text">Cocina: ${truck.tipoCocina}</p>
@@ -181,11 +180,14 @@ async function loadFoodTrucksCercanos(ciudad, calle) {
         const foodTrucks = await response.json();
         const foodTrucksList = document.getElementById('foodTrucksList');
         foodTrucksList.innerHTML = '';
+        if (foodTrucks.length === 0) {
+            foodTrucksList.innerHTML = '<p class="text-center">No se encontraron food trucks cercanos.</p>';
+            return;
+        }
         foodTrucks.forEach(truck => {
             const card = `
                 <div class="col">
                     <div class="card h-100">
-                        <img src="/img/foodtruck_placeholder.jpg" class="card-img-top" alt="${truck.nombre}">
                         <div class="card-body">
                             <h5 class="card-title">${truck.nombre}</h5>
                             <p class="card-text">Cocina: ${truck.tipoCocina}</p>
@@ -198,7 +200,9 @@ async function loadFoodTrucksCercanos(ciudad, calle) {
             foodTrucksList.innerHTML += card;
         });
     } catch (error) {
-        console.error('Error al cargar food trucks:', error);
+        console.error('Error al cargar food trucks cercanos:', error);
+        const foodTrucksList = document.getElementById('foodTrucksList');
+        foodTrucksList.innerHTML = '<p class="text-danger text-center">Error al cargar los food trucks cercanos.</p>';
     }
 }
 
@@ -217,11 +221,9 @@ async function loadMenus(foodTruckId) {
             return;
         }
         menus.forEach(menu => {
-            const imageSrc = menu.imagenUrl || PLACEHOLDER_IMAGE;
             const card = `
                 <div class="col">
                     <div class="card h-100">
-                        <img src="${imageSrc}" class="card-img-top menu-image" alt="${menu.nombre}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
                         <div class="card-body">
                             <h5 class="card-title">${menu.nombre}</h5>
                             <p class="card-text">${menu.descripcion}</p>
@@ -254,11 +256,9 @@ async function loadAllMenus() {
             return;
         }
         menus.forEach(menu => {
-            const imageSrc = menu.imagenUrl || PLACEHOLDER_IMAGE;
             const card = `
                 <div class="col">
                     <div class="card h-100">
-                        <img src="${imageSrc}" class="card-img-top menu-image" alt="${menu.nombre}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
                         <div class="card-body">
                             <h5 class="card-title">${menu.nombre}</h5>
                             <p class="card-text">${menu.descripcion}</p>
@@ -285,10 +285,8 @@ async function loadMenusForPedido(foodTruckId) {
         const menuItems = document.getElementById('menuItems');
         menuItems.innerHTML = '';
         menus.forEach(menu => {
-            const imageSrc = menu.imagenUrl || PLACEHOLDER_IMAGE;
             const item = `
                 <div class="list-group-item d-flex align-items-center">
-                    <img src="${imageSrc}" class="menu-thumbnail me-2" alt="${menu.nombre}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
                     <div>
                         <input type="checkbox" class="form-check-input me-2" id="menu-${menu.id}" value="${menu.nombre}" data-precio="${menu.precio}">
                         <label class="form-check-label" for="menu-${menu.id}">${menu.nombre} ($${menu.precio.toFixed(2)})</label>
@@ -377,7 +375,7 @@ async function loadNotificaciones() {
     }
 }
 
-// Cargar pedidos de un usuario
+// Cargar pedidos de un usuario (para revisar, fallo mostrar elementos  )
 async function loadPedidos() {
     const usuarioId = document.getElementById('usuarioIdPedidos').value;
     if (!usuarioId) {
@@ -436,7 +434,6 @@ async function createMenu() {
     const nombre = document.getElementById('nombre').value.trim();
     const descripcion = document.getElementById('descripcion').value.trim();
     const precio = document.getElementById('precio').value.trim();
-    const imageFile = document.getElementById('imageFile').files[0];
 
     // Validate required fields
     if (!foodTruckId || isNaN(parseInt(foodTruckId)) || parseInt(foodTruckId) <= 0) {
@@ -451,33 +448,21 @@ async function createMenu() {
         document.getElementById('createMenuMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un precio válido mayor que 0.</p>';
         return;
     }
-    if (imageFile && !imageFile.type.startsWith('image/')) {
-        document.getElementById('createMenuMessage').innerHTML = '<p class="text-danger">Por favor, selecciona un archivo de imagen válido.</p>';
-        return;
-    }
 
-    const formData = new FormData();
     const menu = {
         foodTruckId: parseInt(foodTruckId),
         nombre,
         descripcion: descripcion || null,
         precio: parseFloat(precio)
     };
-    formData.append('menu', JSON.stringify(menu));
-    if (imageFile) {
-        formData.append('image', imageFile);
-    }
-
-    // Log FormData contents for debugging
-    console.log('FormData contents:');
-    for (const [key, value] of formData.entries()) {
-        console.log(`${key}: ${value instanceof File ? value.name : value}`);
-    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/menus`, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(menu)
         });
         if (response.ok) {
             document.getElementById('createMenuMessage').innerHTML = '<p class="text-success">Menú creado con éxito.</p>';
@@ -494,7 +479,6 @@ async function createMenu() {
 
 // Crear múltiples menús
 async function createMenus() {
-    const formData = new FormData();
     const foodTruckId = parseInt(document.getElementById('bulkFoodTruckId').value);
     const menuItems = document.querySelectorAll('.menu-item');
     const menus = Array.from(menuItems).map(item => ({
@@ -503,17 +487,14 @@ async function createMenus() {
         descripcion: item.querySelector('.menu-descripcion').value,
         precio: parseFloat(item.querySelector('.menu-precio').value)
     }));
-    formData.append('menus', JSON.stringify(menus));
-    menuItems.forEach((item, index) => {
-        const imageFile = item.querySelector('.menu-imageFile').files[0];
-        if (imageFile) {
-            formData.append(`images`, imageFile);
-        }
-    });
+
     try {
         const response = await fetch(`${API_BASE_URL}/menus/bulk`, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(menus)
         });
         if (response.ok) {
             document.getElementById('createMenusMessage').innerHTML = '<p class="text-success">Menús creados con éxito.</p>';
@@ -532,10 +513,9 @@ async function createMenus() {
 // Modificar un menú
 async function updateMenu() {
     const menuId = parseInt(document.getElementById('menuIdUpdate').value);
-    const formData = new FormData();
     const menu = {};
 
-    // Only include fields that have values
+    // solo actualizar los campos que se proporcionan
     const foodTruckId = document.getElementById('updateFoodTruckId').value.trim();
     const nombre = document.getElementById('updateNombre').value.trim();
     const descripcion = document.getElementById('updateDescripcion').value.trim();
@@ -546,23 +526,19 @@ async function updateMenu() {
     if (descripcion) menu.descripcion = descripcion;
     if (precio) menu.precio = parseFloat(precio);
 
-    // Only append menu if there are fields to update
-    if (Object.keys(menu).length > 0 || document.getElementById('updateImageFile').files[0]) {
-        formData.append('menu', JSON.stringify(menu));
-    } else {
+    // Validar campos requeridos
+    if (Object.keys(menu).length === 0) {
         document.getElementById('updateMenuMessage').innerHTML = '<p class="text-danger">Por favor, proporciona al menos un campo para actualizar.</p>';
         return;
-    }
-
-    const imageFile = document.getElementById('updateImageFile').files[0];
-    if (imageFile) {
-        formData.append('image', imageFile);
     }
 
     try {
         const response = await fetch(`${API_BASE_URL}/menus/${menuId}`, {
             method: 'PUT',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(menu)
         });
         if (response.ok) {
             document.getElementById('updateMenuMessage').innerHTML = '<p class="text-success">Menú modificado con éxito.</p>';
@@ -616,10 +592,6 @@ function addMenuItem() {
                 <label class="form-label">Precio</label>
                 <input type="number" step="0.01" class="form-control menu-precio" placeholder="Precio" required>
             </div>
-            <div class="mb-2">
-                <label class="form-label">Imagen</label>
-                <input type="file" class="form-control menu-imageFile" accept="image/*">
-            </div>
         </div>
     `;
     container.innerHTML += newItem;
@@ -641,10 +613,6 @@ function getInitialMenuItem() {
             <div class="mb-2">
                 <label class="form-label">Precio</label>
                 <input type="number" step="0.01" class="form-control menu-precio" placeholder="Precio" required>
-            </div>
-            <div class="mb-2">
-                <label class="form-label">Imagen</label>
-                <input type="file" class="form-control menu-imageFile" accept="image/*">
             </div>
         </div>
     `;
