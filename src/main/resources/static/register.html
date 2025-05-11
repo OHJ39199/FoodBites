@@ -41,31 +41,32 @@
     <h1 class="text-center mb-4">Regístrate en Truck Bites</h1>
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <form id="registerForm" class="card p-4">
+            <form id="registerForm" class="p-4 border rounded bg-light">
                 <div class="mb-3">
                     <label for="registerNombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="registerNombre" required>
+                    <input type="text" class="form-control" id="registerNombre" placeholder="Ingresa tu nombre" required>
                 </div>
                 <div class="mb-3">
-                    <label for="registerEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="registerEmail" required>
+                    <label for="registerEmail" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="registerEmail" placeholder="Ingresa tu correo" required>
                 </div>
                 <div class="mb-3">
                     <label for="registerPassword" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="registerPassword" required>
+                    <input type="password" class="form-control" id="registerPassword" placeholder="Ingresa tu contraseña" required>
                 </div>
                 <div class="mb-3">
-                    <label for="registerUbicacion" class="form-label">Ubicación</label>
-                    <input type="text" class="form-control" id="registerUbicacion" placeholder="Ej: Nueva York, 5th Ave">
+                    <label for="registerUbicacion" class="form-label">Ubicación (Opcional)</label>
+                    <input type="text" class="form-control" id="registerUbicacion" placeholder="Ej. Nueva York, 5th Ave">
                 </div>
-                <button type="submit" class="btn btn-success w-100">Registrarse</button>
-                <div id="registerMessage" class="mt-3"></div>
+                <button type="submit" class="btn btn-primary w-100">Registrarse</button>
             </form>
+            <div id="registerMessage" class="mt-3"></div>
         </div>
     </div>
 </main>
 
-<footer class="bg-dark text-white p-4">
+<!-- Pie de página -->
+<footer class="text p-4">
     <div class="container">
         <div class="row">
             <div class="col-md-6">

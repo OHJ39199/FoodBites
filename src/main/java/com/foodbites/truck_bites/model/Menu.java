@@ -17,6 +17,10 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "food_truck_id", nullable = false)
+    private FoodTruck foodTruck;
+
     @Column(nullable = false)
     private String nombre;
 
@@ -26,7 +30,6 @@ public class Menu {
     @Column(nullable = false)
     private Double precio;
 
-    @ManyToOne
-    @JoinColumn(name = "food_truck_id", nullable = false)
-    private FoodTruck foodTruck;
+    @Column(name = "imagen_url")
+    private String imagenUrl;
 }
