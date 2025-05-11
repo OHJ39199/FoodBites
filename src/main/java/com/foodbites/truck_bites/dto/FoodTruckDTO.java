@@ -13,4 +13,15 @@ public class FoodTruckDTO {
     private String nombre;
     private String tipoCocina;
     private String ubicacionActual; // Formato: "ciudad, calle"
+    private Integer orderCount;
+
+    public FoodTruckDTO() {}
+
+    public FoodTruckDTO(Long id, String nombre, String tipoCocina, String ubicacionActual, Integer orderCount) {
+        this.id = id;
+        this.nombre = nombre;
+        this.tipoCocina = tipoCocina;
+        this.ubicacionActual = ubicacionActual;
+        this.orderCount = orderCount;
+    }
 }

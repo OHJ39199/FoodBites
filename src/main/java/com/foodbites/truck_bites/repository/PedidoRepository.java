@@ -1,10 +1,12 @@
 package com.foodbites.truck_bites.repository;
 
 import com.foodbites.truck_bites.model.Pedido;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -43,8 +45,8 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Query("SELECT SUM(p.montoTotal) FROM Pedido p WHERE p.foodTruck.id = :foodTruckId " +
             "AND p.fechaCreacion BETWEEN :startDate AND :endDate")
     Double calculateTotalSalesByFoodTruck(@Param("foodTruckId") Long foodTruckId,
-                                          @Param("startDate") java.time.LocalDateTime startDate,
-                                          @Param("endDate") java.time.LocalDateTime endDate);
+                                          @Param("startDate") LocalDateTime startDate,
+                                          @Param("endDate") LocalDateTime endDate);
 
     /**
      * Encuentra pedidos por usuario y food truck.
@@ -54,4 +56,19 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
      */
     @Query("SELECT p FROM Pedido p JOIN p.usuario u JOIN p.foodTruck ft WHERE u.id = :usuarioId AND ft.id = :foodTruckId")
     List<Pedido> findByUsuarioIdAndFoodTruckId(@Param("usuarioId") Long usuarioId, @Param("foodTruckId") Long foodTruckId);
+
+    /**
+     * Encuentra los food trucks más populares por cantidad de pedidos.
+     * @param pageable Límite de resultados.
+     * @return Lista de food trucks y su conteo de pedidos.
+     */
+
+    @Query("SELECT p.foodTruck, COUNT(p) as orderCount " +
+            "FROM Pedido p " +
+            "GROUP BY p.foodTruck " +
+            "ORDER BY orderCount DESC")
+    List<Object[]> findTopFoodTrucksByOrderCount(Pageable pageable);
+
+    @Query("SELECT AVG(p.montoTotal) FROM Pedido p WHERE p.foodTruck.id = :foodTruckId AND p.estado = 'COMPLETADO'")
+    Double calculateAverageProfitByFoodTruck(@Param("foodTruckId") Long foodTruckId);
 }

@@ -4,6 +4,14 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 const PLACEHOLDER_IMAGE = '/img/placeholder.jpg';
 
+// Mostrar mensaje de error en un elemento
+function showError(elementId, message) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.innerHTML = `<p class="text-danger text-center">${message}</p>`;
+    }
+}
+
 // Cargar contenido al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
     // Cargar food trucks cercanos y carrusel en index.html
@@ -88,6 +96,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Manejar creación, modificación y eliminación de food trucks en adminFoodTrucks.html
+    const createFoodTruckForm = document.getElementById('createFoodTruckForm');
+    if (createFoodTruckForm) {
+        createFoodTruckForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await createFoodTruck();
+        });
+    }
+
+    const updateFoodTruckForm = document.getElementById('updateFoodTruckForm');
+    if (updateFoodTruckForm) {
+        updateFoodTruckForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await updateFoodTruck();
+        });
+    }
+
+    const deleteFoodTruckForm = document.getElementById('deleteFoodTruckForm');
+    if (deleteFoodTruckForm) {
+        deleteFoodTruckForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await deleteFoodTruck();
+        });
+    }
+
+    // Manejar promedio de beneficio en adminFoodTrucks.html
+    const averageProfitForm = document.getElementById('averageProfitForm');
+    if (averageProfitForm) {
+        averageProfitForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const foodTruckId = document.getElementById('foodTruckIdProfit').value.trim();
+            if (!foodTruckId || isNaN(foodTruckId) || parseInt(foodTruckId) <= 0) {
+                showError('topFoodTrucksList', 'Por favor, introduce un ID válido.');
+                return;
+            }
+            await showAverageProfit(foodTruckId);
+        });
+    }
+
     // Manejar registro en register.html
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
@@ -98,333 +145,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Cargar food trucks para el carrusel en index.html
-async function loadCarouselFoodTrucks() {
+// Mostrar el beneficio medio de un food truck
+async function showAverageProfit(foodTruckId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/foodtrucks`);
+        const response = await fetch(`${API_BASE_URL}/foodtrucks/${foodTruckId}/average-profit`);
         if (!response.ok) {
-            throw new Error('Error al cargar food trucks para el carrusel');
+            const errorData = await response.text();
+            throw new Error(errorData || 'Error al obtener el beneficio medio');
         }
-        const foodTrucks = await response.json();
-        const carouselItems = document.getElementById('carouselItems');
-        carouselItems.innerHTML = '';
-        if (foodTrucks.length === 0) {
-            carouselItems.innerHTML = '<div class="carousel-item"><p class="text-center">No se encontraron food trucks.</p></div>';
-            return;
+        const averageProfit = await response.json();
+        const topFoodTrucksList = document.getElementById('topFoodTrucksList');
+        topFoodTrucksList.innerHTML = '';
+
+        // Fetch food truck details for name
+        const truckResponse = await fetch(`${API_BASE_URL}/foodtrucks/${foodTruckId}`);
+        if (!truckResponse.ok) {
+            throw new Error('Error al obtener detalles del food truck');
         }
-        foodTrucks.forEach((truck, index) => {
-            const isActive = index === 0 ? 'active' : '';
-            const slide = `
-                <div class="carousel-item ${isActive}">
-                    <img src="/img/foodtruck_placeholder.jpg" class="d-block w-100" alt="${truck.nombre}">
-                    <div class="carousel-caption d-none d-md-block">
-                        <h3>${truck.nombre}</h3>
-                        <p>Cocina: ${truck.tipoCocina}</p>
-                        <p>Ubicación: ${truck.ubicacionActual}</p>
-                        <a href="menu.html?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
-                    </div>
-                </div>
-            `;
-            carouselItems.innerHTML += slide;
-        });
+        const truck = await truckResponse.json();
+
+        const item = `
+            <div class="list-group-item">
+                <h5>Food Truck: ${truck.nombre}</h5>
+                <p><small>Beneficio Medio por Pedido: $${averageProfit.toFixed(2)}</small></p>
+            </div>
+        `;
+        topFoodTrucksList.innerHTML = item;
     } catch (error) {
-        console.error('Error al cargar food trucks para el carrusel:', error);
-        const carouselItems = document.getElementById('carouselItems');
-        carouselItems.innerHTML = '<div class="carousel-item"><p class="text-danger text-center">Error al cargar el carrusel.</p></div>';
+        console.error('Error al obtener beneficio medio:', error);
+        showError('topFoodTrucksList', error.message);
     }
 }
 
-// Cargar todos los food trucks
-async function loadAllFoodTrucks() {
+// Cargar top 3 food trucks por número de pedidos
+async function listTopFoodTrucks() {
     try {
-        const response = await fetch(`${API_BASE_URL}/foodtrucks`);
+        const response = await fetch(`${API_BASE_URL}/foodtrucks/top-by-orders?limit=3`);
         if (!response.ok) {
-            throw new Error('Error al cargar food trucks');
+            throw new Error('Error al cargar los food trucks más populares');
         }
         const foodTrucks = await response.json();
-        const foodTrucksList = document.getElementById('foodTrucksList');
-        foodTrucksList.innerHTML = '';
+        const topFoodTrucksList = document.getElementById('topFoodTrucksList');
+        topFoodTrucksList.innerHTML = '';
         if (foodTrucks.length === 0) {
-            foodTrucksList.innerHTML = '<p class="text-center">No se encontraron food trucks.</p>';
+            topFoodTrucksList.innerHTML = '<p class="text-center">No se encontraron food trucks con pedidos.</p>';
             return;
         }
         foodTrucks.forEach(truck => {
-            const card = `
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">${truck.nombre}</h5>
-                            <p class="card-text">Cocina: ${truck.tipoCocina}</p>
-                            <p class="card-text">Ubicación: ${truck.ubicacionActual}</p>
-                            <a href="menu.html?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
-                        </div>
-                    </div>
-                </div>
-            `;
-            foodTrucksList.innerHTML += card;
-        });
-    } catch (error) {
-        console.error('Error al cargar food trucks:', error);
-        const foodTrucksList = document.getElementById('foodTrucksList');
-        foodTrucksList.innerHTML = '<p class="text-danger text-center">Error al cargar los food trucks.</p>';
-    }
-}
-
-// Cargar food trucks cercanos
-async function loadFoodTrucksCercanos(ciudad, calle) {
-    try {
-        const url = new URL(`${API_BASE_URL}/foodtrucks/cerca`);
-        url.searchParams.append('ciudad', ciudad);
-        if (calle) url.searchParams.append('calle', calle);
-        const response = await fetch(url);
-        const foodTrucks = await response.json();
-        const foodTrucksList = document.getElementById('foodTrucksList');
-        foodTrucksList.innerHTML = '';
-        if (foodTrucks.length === 0) {
-            foodTrucksList.innerHTML = '<p class="text-center">No se encontraron food trucks cercanos.</p>';
-            return;
-        }
-        foodTrucks.forEach(truck => {
-            const card = `
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">${truck.nombre}</h5>
-                            <p class="card-text">Cocina: ${truck.tipoCocina}</p>
-                            <p class="card-text">Ubicación: ${truck.ubicacionActual}</p>
-                            <a href="menu.html?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
-                        </div>
-                    </div>
-                </div>
-            `;
-            foodTrucksList.innerHTML += card;
-        });
-    } catch (error) {
-        console.error('Error al cargar food trucks cercanos:', error);
-        const foodTrucksList = document.getElementById('foodTrucksList');
-        foodTrucksList.innerHTML = '<p class="text-danger text-center">Error al cargar los food trucks cercanos.</p>';
-    }
-}
-
-// Cargar menús de un food truck específico
-async function loadMenus(foodTruckId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/menus/foodtruck/${foodTruckId}`);
-        if (!response.ok) {
-            throw new Error('Error al cargar menús');
-        }
-        const menus = await response.json();
-        const menuList = document.getElementById('menuList');
-        menuList.innerHTML = '';
-        if (menus.length === 0) {
-            menuList.innerHTML = '<p class="text-center">No se encontraron menús para este food truck.</p>';
-            return;
-        }
-        menus.forEach(menu => {
-            const card = `
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">${menu.nombre}</h5>
-                            <p class="card-text">${menu.descripcion}</p>
-                            <p class="card-text"><strong>Precio:</strong> $${menu.precio.toFixed(2)}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            menuList.innerHTML += card;
-        });
-    } catch (error) {
-        console.error('Error al cargar menús:', error);
-        const menuList = document.getElementById('menuList');
-        menuList.innerHTML = '<p class="text-danger text-center">Error al cargar los menús.</p>';
-    }
-}
-
-// Cargar todos los menús de todos los food trucks
-async function loadAllMenus() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/menus`);
-        if (!response.ok) {
-            throw new Error('Error al cargar menús');
-        }
-        const menus = await response.json();
-        const menuList = document.getElementById('menuList');
-        menuList.innerHTML = '';
-        if (menus.length === 0) {
-            menuList.innerHTML = '<p class="text-center">No se encontraron menús.</p>';
-            return;
-        }
-        menus.forEach(menu => {
-            const card = `
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">${menu.nombre}</h5>
-                            <p class="card-text">${menu.descripcion}</p>
-                            <p class="card-text"><strong>Precio:</strong> $${menu.precio.toFixed(2)}</p>
-                            <p class="card-text"><strong>Food Truck:</strong> ${menu.foodTruckNombre}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            menuList.innerHTML += card;
-        });
-    } catch (error) {
-        console.error('Error al cargar menús:', error);
-        const menuList = document.getElementById('menuList');
-        menuList.innerHTML = '<p class="text-danger text-center">Error al cargar los menús.</p>';
-    }
-}
-
-// Cargar menús para selección en pedido.html
-async function loadMenusForPedido(foodTruckId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/menus/foodtruck/${foodTruckId}`);
-        const menus = await response.json();
-        const menuItems = document.getElementById('menuItems');
-        menuItems.innerHTML = '';
-        menus.forEach(menu => {
-            const item = `
-                <div class="list-group-item d-flex align-items-center">
-                    <div>
-                        <input type="checkbox" class="form-check-input me-2" id="menu-${menu.id}" value="${menu.nombre}" data-precio="${menu.precio}">
-                        <label class="form-check-label" for="menu-${menu.id}">${menu.nombre} ($${menu.precio.toFixed(2)})</label>
-                    </div>
-                </div>
-            `;
-            menuItems.innerHTML += item;
-        });
-        // Actualizar ítems y monto total al seleccionar
-        menuItems.addEventListener('change', updatePedido);
-    } catch (error) {
-        console.error('Error al cargar menús para pedido:', error);
-    }
-}
-
-// Actualizar ítems seleccionados y monto total
-function updatePedido() {
-    const checkboxes = document.querySelectorAll('#menuItems input:checked');
-    const items = Array.from(checkboxes).map(cb => cb.value).join(', ');
-    const montoTotal = Array.from(checkboxes).reduce((sum, cb) => sum + parseFloat(cb.dataset.precio), 0);
-    document.getElementById('items').value = items;
-    document.getElementById('montoTotal').value = montoTotal.toFixed(2);
-}
-
-// Enviar un pedido
-async function submitPedido() {
-    const pedido = {
-        usuarioId: parseInt(document.getElementById('usuarioId').value),
-        foodTruckId: document.getElementById('foodTruckId').value,
-        items: document.getElementById('items').value,
-        montoTotal: parseFloat(document.getElementById('montoTotal').value),
-        estado: 'PENDIENTE'
-    };
-    try {
-        const response = await fetch(`${API_BASE_URL}/pedidos`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(pedido)
-        });
-        if (response.ok) {
-            alert('Pedido enviado con éxito');
-            document.getElementById('pedidoForm').reset();
-            document.getElementById('menuItems').innerHTML = '';
-        } else {
-            alert('Error al enviar el pedido');
-        }
-    } catch (error) {
-        console.error('Error al enviar pedido:', error);
-        alert('Error al enviar el pedido');
-    }
-}
-
-// Cargar notificaciones de un usuario
-async function loadNotificaciones() {
-    const usuarioId = document.getElementById('usuarioIdNotificaciones').value;
-    if (!usuarioId) {
-        document.getElementById('notificacionesList').innerHTML = '<p class="text-danger text-center">Por favor, ingresa un ID de usuario.</p>';
-        return;
-    }
-    try {
-        const response = await fetch(`${API_BASE_URL}/notificaciones/usuario/${usuarioId}`);
-        if (!response.ok) {
-            throw new Error('Error al cargar notificaciones');
-        }
-        const notificaciones = await response.json();
-        const notificacionesList = document.getElementById('notificacionesList');
-        notificacionesList.innerHTML = '';
-        if (notificaciones.length === 0) {
-            notificacionesList.innerHTML = '<p class="text-center">No se encontraron notificaciones.</p>';
-            return;
-        }
-        notificaciones.forEach(notificacion => {
             const item = `
                 <div class="list-group-item">
-                    <h5>${notificacion.mensaje}</h5>
-                    <p><small>Enviado: ${new Date(notificacion.fechaEnvio).toLocaleString()}</small></p>
+                    <h5>${truck.nombre}</h5>
+                    <p><small>Cocina: ${truck.tipoCocina} | Ubicación: ${truck.ubicacionActual} | Pedidos: ${truck.orderCount}</small></p>
                 </div>
             `;
-            notificacionesList.innerHTML += item;
+            topFoodTrucksList.innerHTML += item;
         });
     } catch (error) {
-        console.error('Error al cargar notificaciones:', error);
-        document.getElementById('notificacionesList').innerHTML = '<p class="text-danger text-center">Error al cargar las notificaciones.</p>';
+        console.error('Error al cargar top food trucks:', error);
+        document.getElementById('topFoodTrucksList').innerHTML = '<p class="text-danger text-center">Error al cargar los food trucks más populares.</p>';
     }
 }
-
-// Cargar pedidos de un usuario (para revisar, fallo mostrar elementos  )
-async function loadPedidos() {
-    const usuarioId = document.getElementById('usuarioIdPedidos').value;
-    if (!usuarioId) {
-        document.getElementById('pedidosList').innerHTML = '<p class="text-danger text-center">Por favor, ingresa un ID de usuario.</p>';
+// Mostrar el beneficio medio de un food truck
+async function showAverageProfit() {
+    const foodTruckId = prompt('Introduce el ID del Food Truck:');
+    if (!foodTruckId || isNaN(foodTruckId)) {
+        showError('topFoodTrucksList', 'Por favor, introduce un ID válido.');
         return;
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/pedidos/usuario/${usuarioId}`);
+        const response = await fetch(`${API_BASE_URL}/foodtrucks/${foodTruckId}/average-profit`);
         if (!response.ok) {
-            throw new Error('Error al cargar pedidos');
+            const errorData = await response.text();
+            throw new Error(errorData || 'Error al obtener el beneficio medio');
         }
-        const pedidos = await response.json();
-        const pedidosList = document.getElementById('pedidosList');
-        pedidosList.innerHTML = '';
-        if (pedidos.length === 0) {
-            pedidosList.innerHTML = '<p class="text-center">No se encontraron pedidos para este usuario.</p>';
-            return;
+        const averageProfit = await response.json();
+        const topFoodTrucksList = document.getElementById('topFoodTrucksList');
+        topFoodTrucksList.innerHTML = '';
+
+        // Fetch food truck details for name
+        const truckResponse = await fetch(`${API_BASE_URL}/foodtrucks/${foodTruckId}`);
+        if (!truckResponse.ok) {
+            throw new Error('Error al obtener detalles del food truck');
         }
-        pedidosList.innerHTML = `
-            <table class="table table-striped table-bordered table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col" class="pedido-id-col">ID Pedido</th>
-                        <th scope="col" class="foodtruck-col">Food Truck</th>
-                        <th scope="col" class="items-col">Ítems</th>
-                        <th scope="col" class="monto-col">Monto Total</th>
-                        <th scope="col" class="estado-col">Estado</th>
-                        <th scope="col" class="fecha-col">Fecha Creación</th>
-                    </tr>
-                </thead>
-                <tbody>
+        const truck = await truckResponse.json();
+
+        const item = `
+            <div class="list-group-item">
+                <h5>Food Truck: ${truck.nombre}</h5>
+                <p><small>Beneficio Medio por Pedido: $${averageProfit.toFixed(2)}</small></p>
+            </div>
         `;
-        pedidos.forEach(pedido => {
-            const itemsTruncated = pedido.items.length > 50 ? pedido.items.substring(0, 47) + '...' : pedido.items;
-            pedidosList.innerHTML += `
-                <tr>
-                    <td class="pedido-id-col">${pedido.id}</td>
-                    <td class="foodtruck-col">${pedido.foodTruckNombre}</td>
-                    <td class="items-col" title="${pedido.items}">${itemsTruncated}</td>
-                    <td class="monto-col">$${pedido.montoTotal.toFixed(2)}</td>
-                    <td class="estado-col">${pedido.estado}</td>
-                    <td class="fecha-col">${new Date(pedido.fechaCreacion).toLocaleString()}</td>
-                </tr>
-            `;
-        });
-        pedidosList.innerHTML += '</tbody></table>';
+        topFoodTrucksList.innerHTML = item;
     } catch (error) {
-        console.error('Error al cargar pedidos:', error);
-        document.getElementById('pedidosList').innerHTML = '<p class="text-danger text-center">Error al cargar los pedidos.</p>';
+        console.error('Error al obtener beneficio medio:', error);
+        showError('topFoodTrucksList', error.message);
     }
 }
 
@@ -515,7 +329,7 @@ async function updateMenu() {
     const menuId = parseInt(document.getElementById('menuIdUpdate').value);
     const menu = {};
 
-    // solo actualizar los campos que se proporcionan
+    // Only include fields that have values
     const foodTruckId = document.getElementById('updateFoodTruckId').value.trim();
     const nombre = document.getElementById('updateNombre').value.trim();
     const descripcion = document.getElementById('updateDescripcion').value.trim();
@@ -526,7 +340,7 @@ async function updateMenu() {
     if (descripcion) menu.descripcion = descripcion;
     if (precio) menu.precio = parseFloat(precio);
 
-    // Validar campos requeridos
+    // Validate that at least one field is provided
     if (Object.keys(menu).length === 0) {
         document.getElementById('updateMenuMessage').innerHTML = '<p class="text-danger">Por favor, proporciona al menos un campo para actualizar.</p>';
         return;
@@ -570,6 +384,127 @@ async function deleteMenu() {
     } catch (error) {
         console.error('Error al eliminar menú:', error);
         document.getElementById('deleteMenuMessage').innerHTML = '<p class="text-danger">Error al conectar con el servidor.</p>';
+    }
+}
+
+// Crear un food truck individual
+async function createFoodTruck() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const tipoCocina = document.getElementById('tipoCocina').value.trim();
+    const ubicacionActual = document.getElementById('ubicacionActual').value.trim();
+
+    // Validate required fields
+    if (!nombre) {
+        document.getElementById('createFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un nombre para el food truck.</p>';
+        return;
+    }
+    if (!tipoCocina) {
+        document.getElementById('createFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un tipo de cocina.</p>';
+        return;
+    }
+    if (!ubicacionActual) {
+        document.getElementById('createFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa una ubicación actual.</p>';
+        return;
+    }
+
+    const foodTruck = {
+        nombre,
+        tipoCocina,
+        ubicacionActual
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/foodtrucks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(foodTruck)
+        });
+        if (response.ok) {
+            document.getElementById('createFoodTruckMessage').innerHTML = '<p class="text-success">Food Truck creado con éxito.</p>';
+            document.getElementById('createFoodTruckForm').reset();
+        } else {
+            const errorData = await response.json();
+            document.getElementById('createFoodTruckMessage').innerHTML = `<p class="text-danger">Error: ${errorData.message || 'No se pudo crear el food truck.'}</p>`;
+        }
+    } catch (error) {
+        console.error('Error al crear food truck:', error);
+        document.getElementById('createFoodTruckMessage').innerHTML = '<p class="text-danger">Error al conectar con el servidor.</p>';
+    }
+}
+
+// Modificar un food truck
+async function updateFoodTruck() {
+    const foodTruckId = parseInt(document.getElementById('foodTruckIdUpdate').value);
+    const foodTruck = {};
+
+    // Only include fields that have values
+    const nombre = document.getElementById('updateNombre').value.trim();
+    const tipoCocina = document.getElementById('updateTipoCocina').value.trim();
+    const ubicacionActual = document.getElementById('updateUbicacionActual').value.trim();
+
+    if (nombre) foodTruck.nombre = nombre;
+    if (tipoCocina) foodTruck.tipoCocina = tipoCocina;
+    if (ubicacionActual) foodTruck.ubicacionActual = ubicacionActual;
+
+    // Validate that at least one field is provided
+    if (Object.keys(foodTruck).length === 0) {
+        document.getElementById('updateFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, proporciona al menos un campo para actualizar.</p>';
+        return;
+    }
+
+    // Validate ID
+    if (isNaN(foodTruckId) || foodTruckId <= 0) {
+        document.getElementById('updateFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un ID de Food Truck válido (número positivo).</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/foodtrucks/${foodTruckId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(foodTruck)
+        });
+        if (response.ok) {
+            document.getElementById('updateFoodTruckMessage').innerHTML = '<p class="text-success">Food Truck modificado con éxito.</p>';
+            document.getElementById('updateFoodTruckForm').reset();
+        } else {
+            const errorData = await response.json();
+            document.getElementById('updateFoodTruckMessage').innerHTML = `<p class="text-danger">Error: ${errorData.message || 'No se pudo modificar el food truck.'}</p>`;
+        }
+    } catch (error) {
+        console.error('Error al modificar food truck:', error);
+        document.getElementById('updateFoodTruckMessage').innerHTML = '<p class="text-danger">Error al conectar con el servidor.</p>';
+    }
+}
+
+// Eliminar un food truck
+async function deleteFoodTruck() {
+    const foodTruckId = parseInt(document.getElementById('foodTruckIdDelete').value);
+
+    // Validate ID
+    if (isNaN(foodTruckId) || foodTruckId <= 0) {
+        document.getElementById('deleteFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un ID de Food Truck válido (número positivo).</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/foodtrucks/${foodTruckId}`, {
+            method: 'DELETE'
+        });
+        if (response.ok) {
+            document.getElementById('deleteFoodTruckMessage').innerHTML = '<p class="text-success">Food Truck eliminado con éxito.</p>';
+            document.getElementById('deleteFoodTruckForm').reset();
+        } else {
+            const errorData = await response.json();
+            document.getElementById('deleteFoodTruckMessage').innerHTML = `<p class="text-danger">Error: ${errorData.message || 'No se pudo eliminar el food truck.'}</p>`;
+        }
+    } catch (error) {
+        console.error('Error al eliminar food truck:', error);
+        document.getElementById('deleteFoodTruckMessage').innerHTML = '<p class="text-danger">Error al conectar con el servidor.</p>';
     }
 }
 
