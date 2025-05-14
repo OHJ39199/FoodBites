@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         loadFoodTrucksCercanos('Nueva York', '');
         loadCarouselFoodTrucks();
+        listTopFoodTrucks();
+        showMostConsumedMenus();
     }
 
     // Cargar todos los food trucks en foodtrucks.html
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAllFoodTrucks();
     }
 
-    // Cargar menús en menu.html
+    // Cargar menús y manejar "Hacer Pedido" en menu.html
     if (window.location.pathname.includes('menu.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const foodTruckId = urlParams.get('foodTruckId');
@@ -44,6 +46,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('menuTitle').textContent = 'Todos los Menús';
             loadAllMenus();
         }
+        // Handle "Hacer Pedido" button
+        const makeOrderBtn = document.getElementById('makeOrderBtn');
+        if (makeOrderBtn) {
+            makeOrderBtn.addEventListener('click', () => {
+                if (foodTruckId) {
+                    window.location.href = `pedido.html?foodTruckId=${foodTruckId}`;
+                } else {
+                    window.location.href = 'foodtrucks.html';
+                }
+            });
+        } else {
+            console.error('makeOrderBtn not found in menu.html');
+        }
     }
 
     // Cargar menús y manejar pedido en pedido.html
@@ -53,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (foodTruckId) {
             document.getElementById('foodTruckId').value = foodTruckId;
             loadMenusForPedido(foodTruckId);
+        } else {
+            showError('menuItems', 'No se especificó un food truck.');
         }
         const pedidoForm = document.getElementById('pedidoForm');
         if (pedidoForm) {
@@ -60,6 +77,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 submitPedido();
             });
+        }
+    }
+
+    // Cargar pedidos en notificaciones.html
+    if (window.location.pathname.includes('notificaciones.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const usuarioId = urlParams.get('usuarioId');
+        if (usuarioId) {
+            const usuarioIdInput = document.getElementById('usuarioIdPedidos');
+            if (usuarioIdInput) {
+                usuarioIdInput.value = usuarioId;
+                loadPedidos();
+            }
         }
     }
 
@@ -177,6 +207,45 @@ async function showAverageProfit(foodTruckId) {
     }
 }
 
+// Mostrar menú más consumido y cliente
+document.getElementById('showMostConsumedMenusBtn')?.addEventListener('click', showMostConsumedMenus);
+
+function showMostConsumedMenus() {
+    fetch(`${API_BASE_URL}/foodtrucks/most-consumed-menus`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener los menús más consumidos');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const list = document.getElementById('topFoodTrucksList');
+            list.innerHTML = ''; // Clear previous content
+
+            if (data.length === 0) {
+                list.innerHTML = '<div class="list-group-item">No hay datos de menús consumidos disponibles.</div>';
+                return;
+            }
+
+            data.forEach(item => {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-group-item';
+                listItem.innerHTML = `
+                    <h5>${item.foodTruckNombre}</h5>
+                    <strong>Plato mas vendido:</strong> ${item.menuItem} <br>
+                    <strong>Ventas:</strong> ${item.itemCount} <br>
+                    <strong>Cliente que mas veces lo ha pedido:</strong> ${item.customerName} (${item.customerOrderCount} pedidos)
+                `;
+                list.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const list = document.getElementById('topFoodTrucksList');
+            list.innerHTML = '<div class="list-group-item text-danger">Error al cargar los menús más consumidos.</div>';
+        });
+}
+
 // Cargar top 3 food trucks por número de pedidos
 async function listTopFoodTrucks() {
     try {
@@ -195,7 +264,9 @@ async function listTopFoodTrucks() {
             const item = `
                 <div class="list-group-item">
                     <h5>${truck.nombre}</h5>
-                    <p><small>Cocina: ${truck.tipoCocina} | Ubicación: ${truck.ubicacionActual} | Pedidos: ${truck.orderCount}</small></p>
+                    <strong>Cocina:</strong> ${truck.tipoCocina} <br>
+                    <strong>Ubicación:</strong>${truck.ubicacionActual} <br>
+                    <strong>Pedidos:</strong>${truck.orderCount}
                 </div>
             `;
             topFoodTrucksList.innerHTML += item;
@@ -205,8 +276,7 @@ async function listTopFoodTrucks() {
         showError('topFoodTrucksList', 'Error al cargar los food trucks más populares.');
     }
 }
-
-// ... (rest of the functions remain unchanged: loadCarouselFoodTrucks, loadAllFoodTrucks, etc.)
+// Cargar food trucks para el carrusel
 async function loadCarouselFoodTrucks() {
     try {
         const response = await fetch(`${API_BASE_URL}/foodtrucks`);
@@ -241,7 +311,7 @@ async function loadCarouselFoodTrucks() {
         carouselItems.innerHTML = '<div class="carousel-item"><p class="text-danger text-center">Error al cargar el carrusel.</p></div>';
     }
 }
-
+// Cargar todos los food trucks
 async function loadAllFoodTrucks() {
     try {
         const response = await fetch(`${API_BASE_URL}/foodtrucks`);
@@ -276,7 +346,7 @@ async function loadAllFoodTrucks() {
         foodTrucksList.innerHTML = '<p class="text-danger text-center">Error al cargar los food trucks.</p>';
     }
 }
-
+ // Cargar food trucks cercanos
 async function loadFoodTrucksCercanos(ciudad, calle) {
     try {
         const url = new URL(`${API_BASE_URL}/foodtrucks/cerca`);
@@ -331,8 +401,9 @@ async function loadMenus(foodTruckId) {
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">${menu.nombre}</h5>
-                            <p class="card-text">${menu.descripcion}</p>
+                            <p class="card-text">${menu.descripcion || 'Sin descripción'}</p>
                             <p class="card-text"><strong>Precio:</strong> $${menu.precio.toFixed(2)}</p>
+                            ${menu.imagenUrl ? `<img src="${menu.imagenUrl}" alt="${menu.nombre}" style="max-width: 100px;">` : ''}
                         </div>
                     </div>
                 </div>
@@ -365,7 +436,7 @@ async function loadAllMenus() {
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">${menu.nombre}</h5>
-                            <p class="card-text">${menu.descripcion}</p>
+                            <p class="card-text">${menu.descripcion || 'Sin descripción'}</p>
                             <p class="card-text"><strong>Precio:</strong> $${menu.precio.toFixed(2)}</p>
                             <p class="card-text"><strong>Food Truck:</strong> ${menu.foodTruckNombre}</p>
                         </div>
@@ -387,40 +458,65 @@ async function loadMenusForPedido(foodTruckId) {
         const menus = await response.json();
         const menuItems = document.getElementById('menuItems');
         menuItems.innerHTML = '';
+        if (menus.length === 0) {
+            menuItems.innerHTML = '<div class="list-group-item">No hay menús disponibles.</div>';
+            return;
+        }
         menus.forEach(menu => {
             const item = `
-                <div class="list-group-item d-flex align-items-center">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <input type="checkbox" class="form-check-input me-2" id="menu-${menu.id}" value="${menu.nombre}" data-precio="${menu.precio}">
-                        <label class="form-check-label" for="menu-${menu.id}">${menu.nombre} ($${menu.precio.toFixed(2)})</label>
+                        <h6>${menu.nombre}</h6>
+                        <p>Precio: $${menu.precio.toFixed(2)}</p>
                     </div>
+                    <input type="number" class="form-control w-25" min="0" value="0" data-id="${menu.id}" data-precio="${menu.precio}" data-nombre="${menu.nombre}">
                 </div>
             `;
             menuItems.innerHTML += item;
         });
-        // Actualizar ítems y monto total al seleccionar
-        menuItems.addEventListener('change', updatePedido);
+        // actualizar pedido al cambiar cantidades
+        menuItems.addEventListener('input', updatePedido);
+        updatePedido(); // Initial call
     } catch (error) {
         console.error('Error al cargar menús para pedido:', error);
+        showError('menuItems', 'Error al cargar los menús.');
     }
 }
 
 function updatePedido() {
-    const checkboxes = document.querySelectorAll('#menuItems input:checked');
-    const items = Array.from(checkboxes).map(cb => cb.value).join(', ');
-    const montoTotal = Array.from(checkboxes).reduce((sum, cb) => sum + parseFloat(cb.dataset.precio), 0);
-    document.getElementById('items').value = items;
-    document.getElementById('montoTotal').value = montoTotal.toFixed(2);
+    const items = document.querySelectorAll('#menuItems input[type="number"]');
+    const selectedItems = Array.from(items)
+        .filter(input => input.value > 0)
+        .map(input => ({
+            nombre: input.dataset.nombre,
+            cantidad: parseInt(input.value),
+            precio: parseFloat(input.dataset.precio)
+        }));
+
+    // Update items string
+    const itemsString = selectedItems.map(item => `${item.nombre} (${item.cantidad})`).join(', ');
+    document.getElementById('items').value = itemsString;
+
+    // Update total
+    const total = selectedItems.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+    document.getElementById('montoTotal').value = total.toFixed(2);
 }
 
 async function submitPedido() {
+    const usuarioId = parseInt(document.getElementById('usuarioId').value);
     const pedido = {
-        usuarioId: parseInt(document.getElementById('usuarioId').value),
-        foodTruckId: document.getElementById('foodTruckId').value,
+        usuarioId: usuarioId,
+        foodTruckId: parseInt(document.getElementById('foodTruckId').value),
         items: document.getElementById('items').value,
         montoTotal: parseFloat(document.getElementById('montoTotal').value),
         estado: 'PENDIENTE'
     };
+
+    if (!pedido.items) {
+        document.getElementById('orderMessage').innerHTML = '<div class="alert alert-warning">Seleccione al menos un ítem.</div>';
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/pedidos`, {
             method: 'POST',
@@ -430,15 +526,21 @@ async function submitPedido() {
             body: JSON.stringify(pedido)
         });
         if (response.ok) {
-            alert('Pedido enviado con éxito');
+            const data = await response.json();
+            document.getElementById('orderMessage').innerHTML = '<div class="alert alert-success">Pedido creado con éxito. ID: ' + data.id + '</div>';
             document.getElementById('pedidoForm').reset();
             document.getElementById('menuItems').innerHTML = '';
+            document.getElementById('items').value = '';
+            document.getElementById('montoTotal').value = '';
+            // Redirect to notificaciones.html with usuarioId
+            window.location.href = `notificaciones.html?usuarioId=${usuarioId}`;
         } else {
-            alert('Error al enviar el pedido');
+            const errorData = await response.json();
+            document.getElementById('orderMessage').innerHTML = `<div class="alert alert-danger">Error: ${errorData.message || 'No se pudo crear el pedido.'}</div>`;
         }
     } catch (error) {
         console.error('Error al enviar pedido:', error);
-        alert('Error al enviar el pedido');
+        document.getElementById('orderMessage').innerHTML = '<div class="alert alert-danger">Error al conectar con el servidor.</div>';
     }
 }
 
@@ -517,7 +619,7 @@ async function createMenu() {
     const descripcion = document.getElementById('descripcion').value.trim();
     const precio = document.getElementById('precio').value.trim();
 
-    // Validate required fields
+    // Valida campos requeridos
     if (!foodTruckId || isNaN(parseInt(foodTruckId)) || parseInt(foodTruckId) <= 0) {
         document.getElementById('createMenuMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un ID de Food Truck válido (número positivo).</p>';
         return;
@@ -595,7 +697,7 @@ async function updateMenu() {
     const menuId = parseInt(document.getElementById('menuIdUpdate').value);
     const menu = {};
 
-    // Only include fields that have values
+    // Solo incluye campos que tengan valores
     const foodTruckId = document.getElementById('updateFoodTruckId').value.trim();
     const nombre = document.getElementById('updateNombre').value.trim();
     const descripcion = document.getElementById('updateDescripcion').value.trim();
@@ -606,7 +708,7 @@ async function updateMenu() {
     if (descripcion) menu.descripcion = descripcion;
     if (precio) menu.precio = parseFloat(precio);
 
-    // Validate that at least one field is provided
+    // Valida que al menos un campo se haya proporcionado
     if (Object.keys(menu).length === 0) {
         document.getElementById('updateMenuMessage').innerHTML = '<p class="text-danger">Por favor, proporciona al menos un campo para actualizar.</p>';
         return;
@@ -657,7 +759,7 @@ async function createFoodTruck() {
     const tipoCocina = document.getElementById('tipoCocina').value.trim();
     const ubicacionActual = document.getElementById('ubicacionActual').value.trim();
 
-    // Validate required fields
+    // Valida campos requeridos
     if (!nombre) {
         document.getElementById('createFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un nombre para el food truck.</p>';
         return;
@@ -702,7 +804,7 @@ async function updateFoodTruck() {
     const foodTruckId = parseInt(document.getElementById('foodTruckIdUpdate').value);
     const foodTruck = {};
 
-    // Only include fields that have values
+    // Solo incluye campos que tengan valores
     const nombre = document.getElementById('updateNombre').value.trim();
     const tipoCocina = document.getElementById('updateTipoCocina').value.trim();
     const ubicacionActual = document.getElementById('updateUbicacionActual').value.trim();
@@ -711,7 +813,7 @@ async function updateFoodTruck() {
     if (tipoCocina) foodTruck.tipoCocina = tipoCocina;
     if (ubicacionActual) foodTruck.ubicacionActual = ubicacionActual;
 
-    // Validate that at least one field is provided
+    // Valida que al menos un campo se haya proporcionado
     if (Object.keys(foodTruck).length === 0) {
         document.getElementById('updateFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, proporciona al menos un campo para actualizar.</p>';
         return;
@@ -747,7 +849,7 @@ async function updateFoodTruck() {
 async function deleteFoodTruck() {
     const foodTruckId = parseInt(document.getElementById('foodTruckIdDelete').value);
 
-    // Validate ID
+    // Valida ID
     if (isNaN(foodTruckId) || foodTruckId <= 0) {
         document.getElementById('deleteFoodTruckMessage').innerHTML = '<p class="text-danger">Por favor, ingresa un ID de Food Truck válido (número positivo).</p>';
         return;

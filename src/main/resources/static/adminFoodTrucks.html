@@ -130,9 +130,11 @@
 
     <!-- Fila con botones -->
     <div class="row mt-4">
+        <!-- Botón para mostrar los top3 food trucks -->
         <div class="col-md-4 mb-3">
             <button class="btn btn-primary w-100" onclick="listTopFoodTrucks()">Mostrar Top 3 Food Trucks</button>
         </div>
+        <!-- Botón para mostrar beneficio medio por pedido de un food truck -->
         <div class="col-md-4 mb-3">
             <form id="averageProfitForm">
                 <div class="mb-3">
@@ -142,13 +144,25 @@
                 <button type="submit" class="btn btn-primary w-100">Mostrar Beneficio Medio por Pedido</button>
             </form>
         </div>
+        <!-- Botón para mostrar menús más consumidos de todos los food trucks -->
         <div class="col-md-4 mb-3">
-            <button class="btn btn-primary w-100" disabled>Función Futura 2</button>
+            <button id="showMostConsumedMenusBtn" class="btn btn-primary w-100">Mostrar Menús Más Consumidos y Clientes</button>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <button class="btn btn-primary w-100" disabled>funcion futura</button>
+        </div>
+        <div class="col-md-4 mb-3">
+        </div>
+        <div class="col-md-4 mb-3">
+            <button class="btn btn-primary w-100" disabled>funcion futura</button>
         </div>
     </div>
 
     <!-- Lista de Top 3 Food Trucks -->
     <div id="topFoodTrucksList" class="list-group mt-3"></div>
+    <!-- Lista de Menús Más Consumidos -->
+    <div id="mostConsumedMenusList" class="list-group mt-3"></div>
 </main>
 
 <!-- Pie de página -->

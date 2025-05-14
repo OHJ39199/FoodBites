@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controlador para manejar operaciones relacionadas con food trucks.
@@ -93,5 +94,10 @@ public class FoodTruckController {
     public ResponseEntity<Double> obtenerBeneficioMedioPorPedido(@PathVariable Long id) {
         Double averageProfit = foodTruckService.obtenerBeneficioMedioPorPedido(id);
         return ResponseEntity.ok(averageProfit);
+    }
+
+    @GetMapping("/most-consumed-menus")
+    public ResponseEntity<List<Map<String, Object>>> obtenerMenusMasConsumidos() {
+        return ResponseEntity.ok(foodTruckService.obtenerMenusMasConsumidos());
     }
 }

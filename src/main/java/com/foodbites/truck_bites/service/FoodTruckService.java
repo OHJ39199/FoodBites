@@ -8,9 +8,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -115,6 +113,22 @@ public class FoodTruckService  {
         }
         Double averageProfit = pedidoRepository.calculateAverageProfitByFoodTruck(foodTruckId);
         return averageProfit != null ? averageProfit : 0.0;
+    }
+
+    public List<Map<String, Object>> obtenerMenusMasConsumidos() {
+        List<Object[]> results = pedidoRepository.findMostConsumedMenuItemsForAllFoodTrucks();
+        return results.stream()
+                .map(result -> {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("foodTruckId", result[0]);
+                    response.put("foodTruckNombre", result[1]);
+                    response.put("menuItem", result[2]);
+                    response.put("itemCount", result[3]);
+                    response.put("customerName", result[4]);
+                    response.put("customerOrderCount", result[5]);
+                    return response;
+                })
+                .collect(Collectors.toList());
     }
 
     private FoodTruckDTO toDTO(FoodTruck foodTruck) {
