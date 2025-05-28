@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!--metadatos-->
+    <meta charset="utf-8">
+    <meta name="description" content="Gestiona tus pedidos de comida en tiempo real, localiza food trucks cerca de ti y disfruta de una experiencia gastrónica única."/>
+    <meta name="keywords" content="food trucks, comida, delivery, comida en tiempo real, alimentacion, gastronomia, comida saludable, comida vegetariana, comida vegana"/>
+    <meta name="author" content="Andres Caso Iglesias"/>
+    <meta name="copyright" content="© 2025 Food_Bites. Todos los derechos reservados."/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <!--titulo y favicon-->
+    <title>Truck_Bites</title>
+    <link rel="icon" href="../img/favicon.png" type="image/png"/>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="../css/styles.css">
+
+</head>
+<body>
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="../img/truck_bites.jpg" alt="logo Truck Bites" width="140" height="120">
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="foodtrucks.html">FoodTrucks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="menu.html">Menus</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="register.html">Usuarios</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido principal -->
+<main class="container mt-4">
+    <!-- Formulario de búsqueda notificaciones -->
+    <h2 class="text-center mb-4">Tus Notificaciones</h2>
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="number" class="form-control" id="usuarioIdNotificaciones" placeholder="Ingresa tu ID de usuario" required>
+                <button class="btn btn-primary" type="button" onclick="loadNotificaciones()">Ver Notificaciones</button>
+            </div>
+        </div>
+    </div>
+    <div id="notificacionesList" class="list-group">
+        <!-- Notifications cargaran dinamicamente aqui -->
+    </div>
+
+    <!-- pedidos -->
+    <h2 class="text-center mt-5 mb-4">Consulta Tus Pedidos</h2>
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="number" class="form-control" id="usuarioIdPedidos" placeholder="Ingresa tu ID de usuario" required>
+                <button class="btn btn-primary" type="button" onclick="loadPedidos()">Ver Pedidos</button>
+            </div>
+        </div>
+    </div>
+    <div id="pedidosList" class="list-group">
+        <!-- Pedidos cargaran dinamicamente aqui -->
+    </div>
+</main>
+
+<!-- Bootstrap JS y scripts personalizados -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/scripts.js"></script>
+</body>
+</html>

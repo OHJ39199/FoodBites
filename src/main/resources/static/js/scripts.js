@@ -14,63 +14,125 @@ function showError(elementId, message) {
 
 // Cargar contenido al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
-    // Cargar food trucks cercanos y carrusel en index.html
-    const searchForm = document.getElementById('searchForm');
-    if (searchForm) {
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const ciudad = document.getElementById('ciudad').value;
-            const calle = document.getElementById('calle').value;
-            loadFoodTrucksCercanos(ciudad, calle);
+
+    function displayFoodTrucks(foodTrucks, containerId = 'foodTrucksList') {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Error: Contenedor con id '${containerId}' no encontrado.`);
+            return;
+        }
+        container.innerHTML = ''; // Limpiar el contenedor antes de añadir nuevos elementos
+        if (foodTrucks.length === 0) {
+            container.innerHTML = '<p class="text-center col-12">No se encontraron resultados.</p>';
+            return;
+        }
+        foodTrucks.forEach(truck => {
+            const card = `
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="${truck.imageUrl || 'https://via.placeholder.com/400x200?text=FoodTruck'}" class="card-img-top" alt="${truck.nombre}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${truck.nombre}</h5>
+                            <p class="card-text text-muted">${truck.tipoCocina}</p>
+                            <p class="card-text"><small class="text-muted">${truck.descripcion}</small></p>
+                            <p class="card-text">Ubicación: ${truck.ubicacionActual.calle}, ${truck.ubicacionActual.ciudad}</p>
+                            <div class="mt-auto">
+                                <a href="/menu?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-info btn-sm">Ver Menú</a>
+                                <a href="#" class="btn btn-success btn-sm">Hacer Pedido</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
         });
-        loadFoodTrucksCercanos('Nueva York', '');
-        loadCarouselFoodTrucks();
-        listTopFoodTrucks();
-        showMostConsumedMenus();
     }
 
-    // Cargar todos los food trucks en foodtrucks.html
-    if (window.location.pathname.includes('foodtrucks.html')) {
+    // --- Lógica de Inicialización por Página ---
+    const currentPath = window.location.pathname; // Obtiene la ruta actual de la URL
+
+    // 1. Lógica para la Página de Inicio (index.html -> /)
+    if (currentPath === '/') {
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const ciudad = document.getElementById('ciudad').value;
+                const calle = document.getElementById('calle').value;
+                loadFoodTrucksCercanos(ciudad, calle);
+            });
+            loadFoodTrucksCercanos('Nueva York', '');
+            loadCarouselFoodTrucks();
+            listTopFoodTrucks();
+            showMostConsumedMenus();
+        }
+    }
+    // 2. Lógica para la Página Pública de Food Trucks
+    else if (currentPath === '/foodtrucks') {
         loadAllFoodTrucks();
     }
+    // 3. Lógica para la Página de Administrador de Food Trucks
+    else if (currentPath === '/adminFoodTrucks') {
+        const createFoodTruckForm = document.getElementById('createFoodTruckForm');
+        if (createFoodTruckForm) { createFoodTruckForm.addEventListener('submit', async (e) => { e.preventDefault(); await createFoodTruck(); }); }
+        const updateFoodTruckForm = document.getElementById('updateFoodTruckForm');
+        if (updateFoodTruckForm) { updateFoodTruckForm.addEventListener('submit', async (e) => { e.preventDefault(); await updateFoodTruck(); }); }
+        const deleteFoodTruckForm = document.getElementById('deleteFoodTruckForm');
+        if (deleteFoodTruckForm) { deleteFoodTruckForm.addEventListener('submit', async (e) => { e.preventDefault(); await deleteFoodTruck(); }); }
+        const averageProfitForm = document.getElementById('averageProfitForm');
+        if (averageProfitForm) {
+            averageProfitForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const foodTruckId = document.getElementById('foodTruckIdProfit').value.trim();
+                if (!foodTruckId || isNaN(foodTruckId) || parseInt(foodTruckId) <= 0) {
+                    showError('topFoodTrucksList', 'Por favor, introduce un ID válido para el Food Truck.');
+                    return;
+                }
+                await showAverageProfit(foodTruckId);
+            });
+        }
 
-    // Cargar menús y manejar "Hacer Pedido" en menu.html
-    if (window.location.pathname.includes('menu.html')) {
+    }
+    // 4. Lógica para la Página de Menú
+    else if (currentPath === '/menu') {
         const urlParams = new URLSearchParams(window.location.search);
         const foodTruckId = urlParams.get('foodTruckId');
         const foodTruckName = urlParams.get('foodTruckName');
+        const menuTitleElement = document.getElementById('menuTitle');
+
         if (foodTruckId && foodTruckName) {
-            document.getElementById('menuTitle').textContent = `Menú de ${foodTruckName}`;
+            if (menuTitleElement) { menuTitleElement.textContent = `Menú de ${decodeURIComponent(foodTruckName)}`; }
             loadMenus(foodTruckId);
         } else {
-            document.getElementById('menuTitle').textContent = 'Todos los Menús';
+            if (menuTitleElement) { menuTitleElement.textContent = 'Todos los Menús'; }
             loadAllMenus();
         }
-        // Handle "Hacer Pedido" button
+
         const makeOrderBtn = document.getElementById('makeOrderBtn');
         if (makeOrderBtn) {
             makeOrderBtn.addEventListener('click', () => {
                 if (foodTruckId) {
-                    window.location.href = `pedido.html?foodTruckId=${foodTruckId}`;
+                    window.location.href = `pedido?foodTruckId=${foodTruckId}`; // Redirige a la página de pedido con el ID del Food Truck
                 } else {
-                    window.location.href = 'foodtrucks.html';
+                    window.location.href = 'foodtrucks';
                 }
             });
         } else {
-            console.error('makeOrderBtn not found in menu.html');
+            console.error('makeOrderBtn not found in menu.html. Ensure its ID is correct.');
         }
     }
-
-    // Cargar menús y manejar pedido en pedido.html
-    if (window.location.pathname.includes('pedido.html')) {
+    // 5. Lógica para la Página de Pedido
+    else if (currentPath === '/pedido') {
         const urlParams = new URLSearchParams(window.location.search);
         const foodTruckId = urlParams.get('foodTruckId');
-        if (foodTruckId) {
-            document.getElementById('foodTruckId').value = foodTruckId;
-            loadMenusForPedido(foodTruckId);
+        const foodTruckIdInput = document.getElementById('foodTruckId'); // Asumiendo que es un input oculto en pedido.html para el ID del FT
+        if (foodTruckId && foodTruckIdInput) {
+            foodTruckIdInput.value = foodTruckId; // Establece el ID del FT en el formulario de pedido
+            loadMenusForPedido(foodTruckId); // Asume que esta función carga los menús disponibles para el pedido
         } else {
-            showError('menuItems', 'No se especificó un food truck.');
+            showError('menuItems', 'No se especificó un Food Truck para realizar el pedido.'); // 'menuItems' debe ser un ID de un elemento donde mostrar el error
         }
+
         const pedidoForm = document.getElementById('pedidoForm');
         if (pedidoForm) {
             pedidoForm.addEventListener('submit', (e) => {
@@ -79,99 +141,41 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-
-    // Cargar pedidos en notificaciones.html
-    if (window.location.pathname.includes('notificaciones.html')) {
+    // 6. Lógica para la Página de Notificaciones
+    else if (currentPath === '/notificaciones') {
         const urlParams = new URLSearchParams(window.location.search);
         const usuarioId = urlParams.get('usuarioId');
-        if (usuarioId) {
-            const usuarioIdInput = document.getElementById('usuarioIdPedidos');
-            if (usuarioIdInput) {
-                usuarioIdInput.value = usuarioId;
-                loadPedidos();
-            }
+        const usuarioIdInput = document.getElementById('usuarioIdPedidos'); // Revisa si este ID es correcto para un input/elemento en notificaciones.html
+        if (usuarioId && usuarioIdInput) {
+            usuarioIdInput.value = usuarioId;
+            loadPedidos();
+        } else {
+            console.warn('No se encontró usuarioId en la URL para notificaciones. Es posible que debas cargar notificaciones generales o requerir un ID de usuario.');
+
         }
     }
-
-    // Manejar creación, modificación y eliminación de menús en adminMenu.html
-    const createMenuForm = document.getElementById('createMenuForm');
-    if (createMenuForm) {
-        createMenuForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await createMenu();
-        });
+    // 7. Lógica para la Página de Admin Menú
+    else if (currentPath === '/adminMenu') {
+        const createMenuForm = document.getElementById('createMenuForm');
+        if (createMenuForm) { createMenuForm.addEventListener('submit', async (e) => { e.preventDefault(); await createMenu(); }); }
+        const createMenusForm = document.getElementById('createMenusForm');
+        if (createMenusForm) { createMenusForm.addEventListener('submit', async (e) => { e.preventDefault(); await createMenus(); }); }
+        const updateMenuForm = document.getElementById('updateMenuForm');
+        if (updateMenuForm) { updateMenuForm.addEventListener('submit', async (e) => { e.preventDefault(); await updateMenu(); }); }
+        const deleteMenuForm = document.getElementById('deleteMenuForm');
+        if (deleteMenuForm) { deleteMenuForm.addEventListener('submit', async (e) => { e.preventDefault(); await deleteMenu(); }); }
+        // Puedes añadir aquí una carga inicial de menús para la tabla de administración
+        // Por ejemplo: loadAllMenusForAdminTable();
     }
-
-    const createMenusForm = document.getElementById('createMenusForm');
-    if (createMenusForm) {
-        createMenusForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await createMenus();
-        });
-    }
-
-    const updateMenuForm = document.getElementById('updateMenuForm');
-    if (updateMenuForm) {
-        updateMenuForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await updateMenu();
-        });
-    }
-
-    const deleteMenuForm = document.getElementById('deleteMenuForm');
-    if (deleteMenuForm) {
-        deleteMenuForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await deleteMenu();
-        });
-    }
-
-    // Manejar creación, modificación y eliminación de food trucks en adminFoodTrucks.html
-    const createFoodTruckForm = document.getElementById('createFoodTruckForm');
-    if (createFoodTruckForm) {
-        createFoodTruckForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await createFoodTruck();
-        });
-    }
-
-    const updateFoodTruckForm = document.getElementById('updateFoodTruckForm');
-    if (updateFoodTruckForm) {
-        updateFoodTruckForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await updateFoodTruck();
-        });
-    }
-
-    const deleteFoodTruckForm = document.getElementById('deleteFoodTruckForm');
-    if (deleteFoodTruckForm) {
-        deleteFoodTruckForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await deleteFoodTruck();
-        });
-    }
-
-    // Manejar promedio de beneficio en adminFoodTrucks.html
-    const averageProfitForm = document.getElementById('averageProfitForm');
-    if (averageProfitForm) {
-        averageProfitForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const foodTruckId = document.getElementById('foodTruckIdProfit').value.trim();
-            if (!foodTruckId || isNaN(foodTruckId) || parseInt(foodTruckId) <= 0) {
-                showError('topFoodTrucksList', 'Por favor, introduce un ID válido.');
-                return;
-            }
-            await showAverageProfit(foodTruckId);
-        });
-    }
-
-    // Manejar registro en register.html
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await register();
-        });
+    // 8. Lógica para la Página de Registro
+    else if (currentPath === '/register') {
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await register(); // Asume que esta función maneja el proceso de registro
+            });
+        }
     }
 });
 
@@ -333,7 +337,7 @@ async function loadAllFoodTrucks() {
                             <h5 class="card-title">${truck.nombre}</h5>
                             <p class="card-text">Cocina: ${truck.tipoCocina}</p>
                             <p class="card-text">Ubicación: ${truck.ubicacionActual}</p>
-                            <a href="menu.html?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
+                            <a href="menu?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
                         </div>
                     </div>
                 </div>
@@ -368,7 +372,7 @@ async function loadFoodTrucksCercanos(ciudad, calle) {
                             <h5 class="card-title">${truck.nombre}</h5>
                             <p class="card-text">Cocina: ${truck.tipoCocina}</p>
                             <p class="card-text">Ubicación: ${truck.ubicacionActual}</p>
-                            <a href="menu.html?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
+                            <a href="menu?foodTruckId=${truck.id}&foodTruckName=${encodeURIComponent(truck.nombre)}" class="btn btn-primary">Ver Menú</a>
                         </div>
                     </div>
                 </div>
@@ -533,7 +537,7 @@ async function submitPedido() {
             document.getElementById('items').value = '';
             document.getElementById('montoTotal').value = '';
             // Redirect to notificaciones.html with usuarioId
-            window.location.href = `notificaciones.html?usuarioId=${usuarioId}`;
+            window.location.href = `notificaciones?usuarioId=${usuarioId}`;
         } else {
             const errorData = await response.json();
             document.getElementById('orderMessage').innerHTML = `<div class="alert alert-danger">Error: ${errorData.message || 'No se pudo crear el pedido.'}</div>`;

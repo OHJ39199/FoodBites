@@ -1,53 +1,46 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!--metadatos-->
     <meta charset="utf-8">
-    <meta name="description" content="Gestiona tus pedidos de comida en tiempo real, localiza food trucks cerca de ti y disfruta de una experiencia gastrónica única."/>
+    <meta name="description" content="Gestiona tus pedidos de comida en tiempo real, localiza food trucks cerca de ti y disfruta de una experiencia gastrónica única."/>
     <meta name="keywords" content="food trucks, comida, delivery, comida en tiempo real, alimentacion, gastronomia, comida saludable, comida vegetariana, comida vegana"/>
     <meta name="author" content="Andres Caso Iglesias"/>
     <meta name="copyright" content="© 2025 Food_Bites. Todos los derechos reservados."/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-    <!--titulo y favicon-->
     <title>Truck_Bites</title>
-    <link rel="icon" href="img/favicon.png" type="image/png"/>
+    <link rel="icon" th:href="@{/img/favicon.png}" type="image/png"/>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 
 </head>
 <body>
-<!-- Barra de navegación -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <img src="img/truck_bites.jpg" alt="logo Truck Bites" width="140" height="120">
+        <a class="navbar-brand" th:href="@{/index}">
+            <img th:src="@{/img/truck_bites.jpg}" alt="logo Truck Bites" width="140" height="120">
         </a>
-        
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="foodtrucks.html">FoodTrucks</a>
+                    <a class="nav-link active" th:href="@{/foodtrucks}">FoodTrucks</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="menu.html">Menus</a>
+                    <a class="nav-link" th:href="@{/menu}">Menus</a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
 
-<!-- Contenido principal -->
 <main class="row background-page m-1">
     <h1 class="text-center mb-4">Encuentra Food Trucks Cercanos</h1>
     <div class="row">
-        <!-- Presentación -->
         <div class="col-xl-6 col-md-7 mb-4 d-none d-sm-block">
             <h4 class="title-page" id="quienes-somos">Quiénes Somos</h4>
             <p>¡Bienvenidos a <strong>Truck Bites</strong>, tu plataforma para descubrir los mejores food trucks!</p>
@@ -58,10 +51,8 @@
             <p><em>¡Sabor, aventura y comunidad en cada bocado!</em></p>
         </div>
 
-        <!-- Carrusel de Food Trucks -->
         <div class="col-xl-6 col-md-5 mb-4">
             <h4 class="title-page" id="foodtrucks-destacados">Food Trucks Destacados</h4>
-            <!-- Carrusel -->
             <div id="foodTrucksCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-indicators">
                     <button type="button" data-bs-target="#foodTrucksCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -70,27 +61,27 @@
                 </div>
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="img/tacos-al-pastor.jpg" alt="Taco Fiesta" class="d-block w-100" alt="Taco Truck">
+                        <img th:src="@{/img/tacos-al-pastor.jpg}" alt="Taco Fiesta" class="d-block w-100">
                         <div class="carousel-caption">
                             <h3>Taco Fiesta</h3>
                             <p>Deliciosos tacos al pastor en el corazón de la ciudad.</p>
-                            <a href="menu.html?foodTruckId=1&foodTruckName=Taco%20Fiesta" class="btn btn-primary btn-sm">Ver Menú</a>
+                            <a th:href="@{/menu.html(foodTruckId=1, foodTruckName='Taco Fiesta')}" class="btn btn-primary btn-sm">Ver Menú</a>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="img/hamburguesa-gourmet.jpg" alt="Burger Bonanza" class="d-block w-100" alt="Burger Bonanza">
+                        <img th:src="@{/img/hamburguesa-gourmet.jpg}" alt="Burger Bonanza" class="d-block w-100">
                         <div class="carousel-caption">
                             <h3>Burger Bonanza</h3>
                             <p>Hamburguesas gourmet con ingredientes frescos.</p>
-                            <a href="menu.html?foodTruckId=2&foodTruckName=Burger%20Bonanza" class="btn btn-primary btn-sm">Ver Menú</a>
+                            <a th:href="@{/menu.html(foodTruckId=2, foodTruckName='Burger Bonanza')}" class="btn btn-primary btn-sm">Ver Menú</a>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="img/chocolate-dessert-coffee.jpg" alt="Sweet Rolls" class="d-block w-100" alt="Sweet Rolls">
+                        <img th:src="@{/img/chocolate-dessert-coffee.jpg}" alt="Sweet Rolls" class="d-block w-100">
                         <div class="carousel-caption">
                             <h3>Sweet Rolls</h3>
                             <p>Postres y café artesanal para endulzar tu día.</p>
-                            <a href="menu.html?foodTruckId=5&foodTruckName=Sweet%20Rolls" class="btn btn-primary btn-sm">Ver Menú</a>
+                            <a th:href="@{/menu.html(foodTruckId=5, foodTruckName='Sweet Rolls')}" class="btn btn-primary btn-sm">Ver Menú</a>
                         </div>
                     </div>
                 </div>
@@ -105,55 +96,37 @@
             </div>
         </div>
 
-        <!-- Carrusel de Food Trucks con info dbb-->
-<!--        <div id="foodTruckCarousel" class="carousel slide mb-5" data-bs-ride="carousel">-->
-<!--            <div class="carousel-inner" id="carouselItems">-->
-<!--                &lt;!&ndash; Carousel items will be dynamically loaded here &ndash;&gt;-->
-<!--            </div>-->
-<!--            <button class="carousel-control-prev" type="button" data-bs-target="#foodTruckCarousel" data-bs-slide="prev">-->
-<!--                <span class="carousel-control-prev-icon" aria-hidden="true"></span>-->
-<!--                <span class="visually-hidden">Previous</span>-->
-<!--            </button>-->
-<!--            <button class="carousel-control-next" type="button" data-bs-target="#foodTruckCarousel" data-bs-slide="next">-->
-<!--                <span class="carousel-control-next-icon" aria-hidden="true"></span>-->
-<!--                <span class="visually-hidden">Next</span>-->
-<!--            </button>-->
-<!--        </div>-->
     </div>
     <div class="container mt-4">
-        
-        <!-- Tarjetas de navegación -->
+
         <div class="row">
-            <!-- Card: Buscar Food Trucks -->
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <img src="img/cartel.png" class="card-img-top" alt="Buscar Food Trucks">
+                    <img th:src="@{/img/cartel.png}" class="card-img-top" alt="Buscar Food Trucks">
                     <div class="card-body">
                         <h5 class="card-title">Buscar Food Trucks</h5>
                         <p class="card-text">Encuentra food trucks cercanos por ciudad o calle.</p>
-                        <a href="foodtrucks.html" class="btn btn-primary">Buscar Ahora</a>
+                        <a th:href="@{/foodtrucks.html}" class="btn btn-primary">Buscar Ahora</a>
                     </div>
                 </div>
             </div>
-            <!-- Card: Ver Menús -->
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <img src="img/menu-food-truck.jpg" class="card-img-top" alt="Ver Menús">
+                    <img th:src="@{/img/menu-food-truck.jpg}" class="card-img-top" alt="Ver Menús">
                     <div class="card-body">
                         <h5 class="card-title">Ver Menús</h5>
                         <p class="card-text">Explora los menús de tus food trucks favoritos.</p>
-                        <a href="menu.html" class="btn btn-primary">Ver Menús</a>
+                        <a th:href="@{/menu.html}" class="btn btn-primary">Ver Menús</a>
                     </div>
                 </div>
             </div>
-            <!-- Card: Registrar Nuevo Usuario -->
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <img src="img/registration.jpg" class="card-img-top" alt="Registrar Nuevo Usuario">
+                    <img th:src="@{/img/registration.jpg}" class="card-img-top" alt="Registrar Nuevo Usuario">
                     <div class="card-body">
                         <h5 class="card-title">Registrarse</h5>
                         <p class="card-text">Crea una cuenta para disfrutar de Truck Bites.</p>
-                        <a href="register.html" class="btn btn-primary">Registrarse</a>
+                        <a th:href="@{/register.html}" class="btn btn-primary">Registrarse</a>
                     </div>
                 </div>
             </div>
@@ -161,7 +134,6 @@
     </div>
 </main>
 
-<!-- Pie de página -->
 <footer class="text p-4">
     <div class="container">
         <div class="row">
@@ -178,8 +150,7 @@
     </div>
 </footer>
 
-<!-- Bootstrap JS y scripts personalizados -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="scripts.js"></script>
+<script th:src="@{/js/scripts.js}"></script>
 </body>
 </html>

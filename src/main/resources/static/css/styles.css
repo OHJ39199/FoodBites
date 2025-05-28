@@ -3,7 +3,7 @@
 /*fuente titulos*/
 @font-face {
 	font-family:agresiva;
-	src: url(edosz.ttf);
+	src: url(../fonts/edosz.ttf);
 }
 .alternative-text{
 	font-family: arial;

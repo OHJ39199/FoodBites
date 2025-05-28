@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Gestiona tus pedidos de comida en tiempo real, localiza food trucks cerca de ti y disfruta de una experiencia gastrónica única."/>
+    <meta name="keywords" content="food trucks, comida, delivery, comida en tiempo real, alimentacion, gastronomia, comida saludable, comida vegetariana, comida vegana"/>
+    <meta name="author" content="Andres Caso Iglesias"/>
+    <meta name="copyright" content="© 2025 Food_Bites. Todos los derechos reservados."/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <title>Truck_Bites</title>
+    <link rel="icon" th:href="@{/img/favicon.png}" type="image/png"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/index}">
+            <img th:src="@{/img/truck_bites.jpg}" alt="logo Truck Bites" width="140" height="120">
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/foodtrucks}">FoodTrucks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/menu}">Menus</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/register}">Usuarios</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container mt-4">
+    <h2 class="text-center mb-4">Tus Notificaciones</h2>
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="number" class="form-control" id="usuarioIdNotificaciones" placeholder="Ingresa tu ID de usuario" required>
+                <button class="btn btn-primary" type="button" onclick="loadNotificaciones()">Ver Notificaciones</button>
+            </div>
+        </div>
+    </div>
+    <div id="notificacionesList" class="list-group">
+    </div>
+
+    <h2 class="text-center mt-5 mb-4">Consulta Tus Pedidos</h2>
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="number" class="form-control" id="usuarioIdPedidos" placeholder="Ingresa tu ID de usuario" required>
+                <button class="btn btn-primary" type="button" onclick="loadPedidos()">Ver Pedidos</button>
+            </div>
+        </div>
+    </div>
+    <div id="pedidosList" class="list-group">
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/scripts.js}"></script>
+</body>
+</html>

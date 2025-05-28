@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Truck Bites - Error</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .food-truck-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .food-truck {
+            position: absolute;
+            width: 150px;
+            height: 100px;
+            background: url('/img/cartel.png') no-repeat center;
+            background-size: contain;
+            animation: driveAcross 5s linear infinite;
+        }
+
+        @keyframes driveAcross {
+            0% {
+                left: -150px;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5 text-center">
+    <h1 class="mb-4">¡Ups! Algo salió mal</h1>
+    <p th:text="'Error: ' + ${#httpServletResponse.status}"></p>
+    <p th:if="${error}" th:text="${error}"></p>
+    <p>No encontramos la página que buscas.</p>
+    <div class="food-truck-container">
+        <div class="food-truck" th:style="'background: url(https://img.icons8.com/?size=100&id=4o0k8VJ3QjO7&format=png&color=000000) no-repeat center; background-size: contain;'"></div>
+    </div>
+    <a th:href="@{/}" class="btn btn-primary mt-3">Volver al Inicio</a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
